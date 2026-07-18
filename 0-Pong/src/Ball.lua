@@ -31,3 +31,5 @@ function Ball:reset()
     self.x = VIRTUAL_WIDTH / 2 - 2
     self.y = VIRTUAL_HEIGHT / 2 - 2
 end
+
+return Ball
