@@ -1,6 +1,7 @@
 Push = require("libs.push")
 Class = require("libs.class")
 
+require("src.states.BaseState")
 require("src.StateMachine")
 require("src.states.StartState")
 require("src.states.ServeState")
@@ -55,14 +56,15 @@ function love.load()
             return VictoryState()
         end,
     })
-    GameState:change("start")
 
     Player1 = Paddle(15, VIRTUAL_HEIGHT / 2 - 10, 5, 20)
     Player2 = Paddle(VIRTUAL_WIDTH - 20, VIRTUAL_HEIGHT / 2 - 10, 5, 20)
     GameBall = Ball(VIRTUAL_WIDTH / 2, VIRTUAL_HEIGHT / 2, 4, 4)
     Scores = { 0, 0 }
+    AI = false
     Winner = nil
     ScoreFlash = Flash()
+    GameState:change("start")
 
     love.keyboard.keysPressed = {}
 end
@@ -116,8 +118,9 @@ function love.draw()
     Player1:render()
     Player2:render()
     GameBall:render()
-
-    renderScore()
+    if GameState.current.showScore then
+        renderScore()
+    end
     ScoreFlash:render()
     displayFPS()
 

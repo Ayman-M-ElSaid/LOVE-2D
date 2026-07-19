@@ -1,26 +1,7 @@
 PlayState = Class({ __includes = BaseState })
 
-local function updatePlayersMovement(dt)
-    -- Player 1 Movement
-    if love.keyboard.isDown("w") then
-        Player1.dy = -PADDLE_SPEED
-    elseif love.keyboard.isDown("s") then
-        Player1.dy = PADDLE_SPEED
-    else
-        Player1.dy = 0
-    end
-    Player1:update(dt)
-
-    -- Player 2 Movement
-    if love.keyboard.isDown("up") then
-        Player2.dy = -PADDLE_SPEED
-    elseif love.keyboard.isDown("down") then
-        Player2.dy = PADDLE_SPEED
-    else
-        Player2.dy = 0
-    end
-    Player2:update(dt)
-end
+local AISpeedFactor = (math.random() * 0.5 + 0.5)
+local AIErrorMargin = math.random(-12.5, 12.5)
 
 local function checkCollision()
     -- Paddles Collision
@@ -35,8 +16,10 @@ local function checkCollision()
 
     if player1Collision then
         GameBall.x = Player1.x + Player1.width
+        AIErrorMargin = math.random(-12.5, 12.5)
     elseif player2Collision then
         GameBall.x = Player2.x - GameBall.width
+        AISpeedFactor = (math.random() * 0.5 + 0.5)
     end
 
     --Ceiling Collisions
@@ -55,10 +38,10 @@ local function updateScores()
     local scorer
 
     if GameBall.x < -GameBall.width then
-        scorer = 1
+        scorer = 2
         ScoreFlash:trigger(0, 1)
     elseif GameBall.x > VIRTUAL_WIDTH then
-        scorer = 2
+        scorer = 1
         ScoreFlash:trigger(VIRTUAL_WIDTH, -1)
     end
 
@@ -66,7 +49,7 @@ local function updateScores()
         Sounds["score"]:play()
         Scores[scorer] = Scores[scorer] + 1
         GameBall:reset()
-        ServingPlayer = scorer
+        ServingPlayer = 3 - scorer -- the equation of the straight line joining the two points (scorer:ServingPlayer) = {(1,2),(2,1)} so that the other player serves next.
         if Scores[scorer] == WINNING_SCORE then
             Winner = scorer
             GameState:change("victory")
@@ -76,8 +59,27 @@ local function updateScores()
     end
 end
 
+local function updateAI(dt)
+    local targetY = GameBall.y + GameBall.height / 2 + AIErrorMargin
+    local paddleCenterY = Player2.y + Player2.height / 2
+    local distance = targetY - paddleCenterY
+    if GameBall.dx > 0 then
+        if math.abs(distance) > 5 then
+            Player2.dy = (distance > 0 and 1 or -1) * PADDLE_SPEED * AISpeedFactor
+        else
+            Player2.dy = 0
+        end
+        Player2:update(dt)
+    end
+end
+
 function PlayState:update(dt)
-    updatePlayersMovement(dt)
+    Player1:handleInput(dt, "w", "s")
+    if AI then
+        updateAI(dt)
+    else
+        Player2:handleInput(dt, "up", "down")
+    end
     GameBall:update(dt)
     checkCollision()
     updateScores()
