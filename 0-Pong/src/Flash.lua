@@ -32,3 +32,5 @@ function Flash:render()
         love.graphics.setColor(1, 1, 1, 1)
     end
 end
+
+return Flash
