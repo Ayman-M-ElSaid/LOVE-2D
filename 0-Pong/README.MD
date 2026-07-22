@@ -6,7 +6,7 @@
 
 A LÖVE2D (Lua) implementation of Pong, inspired by Lecture 0 of CS50's Introduction to Game Development (CS50 2D).
 
-![Gameplay](<img width="1280" height="720" alt="Image" src="https://github.com/user-attachments/assets/ca942ab0-5af0-4af7-b1b3-61c19035ad03" />)
+![Gameplay](https://github.com/user-attachments/assets/ca942ab0-5af0-4af7-b1b3-61c19035ad03)
 
 ## Running it
 
@@ -40,7 +40,7 @@ Beyond base Pong, this version adds:
 
 | Start screen | In-game |
 |---|---|
-| ![Start screen](<img width="1280" height="720" alt="Image" src="https://github.com/user-attachments/assets/b157837b-15af-421e-90d1-fd512460b15d" />) | ![Gameplay](<img width="1280" height="720" alt="Image" src="https://github.com/user-attachments/assets/703672f3-6c34-4edb-88b3-4b0b705acdef" />) |
+| ![Start screen](https://github.com/user-attachments/assets/b157837b-15af-421e-90d1-fd512460b15d) | ![Gameplay](https://github.com/user-attachments/assets/703672f3-6c34-4edb-88b3-4b0b705acdef) |
 
 ## Structure
 
