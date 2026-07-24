@@ -8,6 +8,8 @@ require("src.states.CountdownState")
 require("src.states.PlayState")
 require("src.states.ScoreState")
 
+Save = require("src.Save")
+
 WINDOW_WIDTH = 1280
 WINDOW_HEIGHT = 720
 VIRTUAL_WIDTH = 512
@@ -21,6 +23,9 @@ local backgroundX = 0
 local groundX = 0
 
 function love.load()
+    math.randomseed(os.time())
+    HighScore = Save.loadHighScore()
+
     love.graphics.setDefaultFilter("nearest", "nearest")
     love.window.setTitle("Flappy Bird")
     love.window.setMode(WINDOW_WIDTH, WINDOW_HEIGHT, {
@@ -44,6 +49,8 @@ function love.load()
         ["score"] = love.audio.newSource("assets/sounds/score.wav", "static"),
         ["hurt"] = love.audio.newSource("assets/sounds/hurt.wav", "static"),
         ["explosion"] = love.audio.newSource("assets/sounds/explosion.wav", "static"),
+        ["pause"] = love.audio.newSource("assets/sounds/pause.wav", "static"),
+        ["countdown"] = love.audio.newSource("assets/sounds/countdown.mp3", "static"),
     }
     GameState = StateMachine({
         ["title"] = function()

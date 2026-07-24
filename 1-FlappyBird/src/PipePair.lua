@@ -3,14 +3,14 @@ PipePair = Class({})
 local Pipe = require("src.Pipe")
 
 PIPE_SPEED = 60
-local GAP_HEIGHT = 90
+local GAP_HEIGHTS = { 80, 90, 100, 110 }
 
 function PipePair:init(y)
     self.x = VIRTUAL_WIDTH
     self.y = y
     self.pipes = {
         Pipe("top", self.y),
-        Pipe("bottom", self.y + PIPE_HEIGHT + GAP_HEIGHT),
+        Pipe("bottom", self.y + PIPE_HEIGHT + GAP_HEIGHTS[math.random(#GAP_HEIGHTS)]),
     }
     self.scored = false
     self.remove = false
