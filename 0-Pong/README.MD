@@ -2,11 +2,11 @@
 
 ![Lua](https://img.shields.io/badge/Lua-2C2D72?logo=lua&logoColor=white)
 ![LÖVE](https://img.shields.io/badge/L%C3%96VE-11.5-EA316E)
-[![Releases](https://img.shields.io/badge/Releases-Pong-blue)](../../releases?q=pong&expanded=true)
+[![Releases](https://img.shields.io/badge/Releases-Pong-blue)](../../../releases?q=pong&expanded=true)
 
 A LÖVE2D (Lua) implementation of Pong, inspired by Lecture 0 of CS50's Introduction to Game Development (CS50 2D).
 
-![Gameplay](https://github.com/user-attachments/assets/ca942ab0-5af0-4af7-b1b3-61c19035ad03)
+![Gameplay](../screenshots/Pong/demo.gif)
 
 ## Running it
 
@@ -15,7 +15,7 @@ love .
 ```
 from inside the `0-Pong/` folder.
 
-Or grab a packaged build (Windows `.exe`, Android `.apk` when available) from the [Pong releases page](../../releases?q=pong&expanded=true) — no LÖVE installation needed.
+Or grab a packaged build (Windows `.exe`, Android `.apk` when available) from the [Pong releases page](../../../releases?q=pong&expanded=true) — no LÖVE installation needed.
 
 ## Controls
 
@@ -40,7 +40,7 @@ Beyond base Pong, this version adds:
 
 | Start screen | In-game |
 |---|---|
-| ![Start screen](https://github.com/user-attachments/assets/b157837b-15af-421e-90d1-fd512460b15d) | ![Gameplay](https://github.com/user-attachments/assets/703672f3-6c34-4edb-88b3-4b0b705acdef) |
+| ![Start screen](../screenshots/Pong/start-screen.png) | ![Gameplay](../screenshots/Pong/gameplay.png) |
 
 ## Structure
 
