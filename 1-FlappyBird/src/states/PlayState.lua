@@ -16,32 +16,52 @@ function PlayState:init()
     self.resumeTimer = 0
 end
 
-function PlayState:update(dt)
-    -- pause the game if the player presses p
-    if love.keyboard.wasPressed("p") then
-        Sounds["pause"]:play()
-        if not self.isPaused then
+local function handlePause(self)
+    if not self.isPaused then
+        -- pause the game if the player presses p or escape
+        if love.keyboard.wasPressed("p") or love.keyboard.wasPressed("escape") then
+            Sounds["pause"]:play()
             self.isPaused = true
             Scrolling = false
-            return
-        elseif not self.isResumed then
+            Sounds["music"]:pause()
+        end
+    else
+        -- resume the game if the player presses p or space; or quit to title screen if they press escape
+        if
+            love.keyboard.wasPressed("space")
+            or love.mouse.wasPressed(1)
+            or love.keyboard.wasPressed("p")
+        then
             self.isResumed = true
+            Sounds["music"]:play()
             Sounds["countdown"]:play()
-            return
+        elseif love.keyboard.wasPressed("escape") then
+            Sounds["music"]:play()
+            GameState:change("title")
         end
     end
-    -- if the game is resumed, update the countdown timer and resume the game when it reaches 0
+end
+
+local function handleResume(dt, self)
+    -- update the countdown timer and resume the game when it reaches 0
+    self.resumeCountdown, self.resumeTimer =
+        Countdown(dt, self.resumeCountdown, self.resumeTimer)
+    if self.resumeCountdown <= 0 then
+        self.isPaused = false
+        self.isResumed = false
+        Scrolling = true
+        self.resumeCountdown = 3
+        self.resumeTimer = 0
+    end
+end
+
+function PlayState:update(dt)
+    handlePause(self)
+
     if self.isResumed then
-        self.resumeCountdown, self.resumeTimer =
-            Countdown(dt, self.resumeCountdown, self.resumeTimer)
-        if self.resumeCountdown <= 0 then
-            self.isPaused = false
-            self.isResumed = false
-            Scrolling = true
-            self.resumeCountdown = 3
-            self.resumeTimer = 0
-        end
+        handleResume(dt, self)
     end
+
     -- if the game is paused, don't update any game logic
     if self.isPaused then
         return
@@ -120,13 +140,8 @@ local function renderPauseMessage()
     love.graphics.setFont(Fonts["flappy"])
     love.graphics.printf("Paused", 0, VIRTUAL_HEIGHT / 2 + 25, VIRTUAL_WIDTH, "center")
     love.graphics.setFont(Fonts["medium"])
-    love.graphics.printf(
-        "presses p to resume",
-        0,
-        VIRTUAL_HEIGHT / 2 + 55,
-        VIRTUAL_WIDTH,
-        "center"
-    )
+    local message = IS_MOBILE and "tap to resume" or "presses space to resume"
+    love.graphics.printf(message, 0, VIRTUAL_HEIGHT / 2 + 55, VIRTUAL_WIDTH, "center")
 end
 
 function PlayState:render()

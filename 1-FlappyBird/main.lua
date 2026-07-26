@@ -15,6 +15,8 @@ WINDOW_HEIGHT = 720
 VIRTUAL_WIDTH = 512
 VIRTUAL_HEIGHT = 288
 
+IS_MOBILE = love.system.getOS() == "Android" or love.system.getOS() == "iOS"
+
 local BACKGROUND_SCROLL_SPEED = 30
 local GROUND_SCROLL_SPEED = 60
 local BACKGROUND_LOOPING_POINT = 413
@@ -81,10 +83,6 @@ end
 
 function love.keypressed(key)
     love.keyboard.keysPressed[key] = true
-
-    if key == "escape" then
-        love.event.quit()
-    end
 end
 
 function love.keyboard.wasPressed(key)
