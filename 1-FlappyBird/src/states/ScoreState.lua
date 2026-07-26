@@ -40,6 +40,8 @@ end
 function ScoreState:update(dt)
     if love.keyboard.wasPressed("space") or love.mouse.wasPressed(1) then
         GameState:change("countdown")
+    elseif love.keyboard.wasPressed("escape") then
+        GameState:change("title")
     end
 end
 
@@ -63,7 +65,8 @@ function ScoreState:render()
         VIRTUAL_WIDTH,
         "center"
     )
-    love.graphics.printf("Press Space to Play Again!", 0, 190, VIRTUAL_WIDTH, "center")
+    local message = IS_MOBILE and"Tap to Play Again!" or"Press Space to Play Again!"
+    love.graphics.printf(message, 0, 190, VIRTUAL_WIDTH, "center")
 
     if self.medal then
         love.graphics.draw(
