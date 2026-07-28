@@ -82,7 +82,7 @@ function EnterHighScoreState:render()
 
     love.graphics.setFont(Fonts["small"])
     love.graphics.printf(
-        "Press Space to confirm!",
+        GetConfirmMessage() .. "to confirm!",
         0,
         VIRTUAL_HEIGHT - 18,
         VIRTUAL_WIDTH,

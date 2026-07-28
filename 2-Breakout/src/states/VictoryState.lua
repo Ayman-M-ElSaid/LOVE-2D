@@ -13,7 +13,11 @@ function VictoryState:update(dt)
     self.ball.x = self.paddle.x + (self.paddle.width / 2) - 4
     self.ball.y = self.paddle.y - 8
 
-    if love.keyboard.wasPressed("return") or love.keyboard.wasPressed("space") then
+    if
+        love.keyboard.wasPressed("return")
+        or love.keyboard.wasPressed("space")
+        or love.mouse.wasPressed(1)
+    then
         GameState:change("serve", {
             level = self.level + 1,
             bricks = LevelMaker.createMap(self.level + 1),
@@ -24,6 +28,7 @@ function VictoryState:update(dt)
         })
     elseif love.keyboard.wasPressed("escape") then
         GameState:change("start")
+        Sounds["wall-hit"]:play()
     end
 end
 
@@ -44,7 +49,7 @@ function VictoryState:render()
     )
     love.graphics.setFont(Fonts["medium"])
     love.graphics.printf(
-        "Press Space to serve!",
+        GetConfirmMessage() .. "to serve!",
         0,
         VIRTUAL_HEIGHT / 2,
         VIRTUAL_WIDTH,

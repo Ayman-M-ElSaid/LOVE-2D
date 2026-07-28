@@ -14,7 +14,11 @@ function ServeState:update(dt)
     self.ball.x = self.paddle.centerX - self.ball.width / 2
     self.ball.y = self.paddle.y - 8
 
-    if love.keyboard.wasPressed("return") or love.keyboard.wasPressed("space") then
+    if
+        love.keyboard.wasPressed("return")
+        or love.keyboard.wasPressed("space")
+        or love.mouse.wasPressed(1)
+    then
         GameState:change("play", {
             paddle = self.paddle,
             bricks = self.bricks,
@@ -25,6 +29,7 @@ function ServeState:update(dt)
         })
     elseif love.keyboard.wasPressed("escape") then
         GameState:change("start")
+        Sounds["wall-hit"]:play()
     end
 end
 
@@ -48,7 +53,7 @@ function ServeState:render()
     )
     love.graphics.setFont(Fonts["medium"])
     love.graphics.printf(
-        "Press Space to serve!",
+        GetConfirmMessage() .. "to serve!",
         0,
         VIRTUAL_HEIGHT / 2 + 20,
         VIRTUAL_WIDTH,

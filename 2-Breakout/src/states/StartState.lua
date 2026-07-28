@@ -15,11 +15,21 @@ function StartState:update(dt)
         Sounds["paddle-hit"]:play()
     end
 
-    if love.keyboard.wasPressed("return") or love.keyboard.wasPressed("space") then
-        Sounds["confirm"]:play()
-        if self.highlighted == 1 then
+    if not IS_MOBILE then
+        if love.keyboard.wasPressed("return") or love.keyboard.wasPressed("space") then
+            Sounds["confirm"]:play()
+            if self.highlighted == 1 then
+                GameState:change("paddle-select")
+            else
+                GameState:change("high-scores")
+            end
+        end
+    else
+        if love.mouse.wasPressedAt(190, 190, 240, 200) then
+            Sounds["confirm"]:play()
             GameState:change("paddle-select")
-        else
+        elseif love.mouse.wasPressedAt(160, 210, 265, 225) then
+            Sounds["confirm"]:play()
             GameState:change("high-scores")
         end
     end

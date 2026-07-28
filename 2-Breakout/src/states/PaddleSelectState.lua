@@ -5,14 +5,32 @@ function PaddleSelectState:init()
 end
 
 function PaddleSelectState:update(dt)
-    if love.keyboard.wasPressed("left") or love.keyboard.wasPressed("a") then
+    if
+        love.keyboard.wasPressed("left")
+        or love.keyboard.wasPressed("a")
+        or love.mouse.wasPressedAt(
+            VIRTUAL_WIDTH / 4 - 24,
+            VIRTUAL_HEIGHT - VIRTUAL_HEIGHT / 3,
+            VIRTUAL_WIDTH / 4,
+            VIRTUAL_HEIGHT - VIRTUAL_HEIGHT / 3 + 24
+        )
+    then
         if self.selection == 1 then
             Sounds["no-select"]:play()
         else
             Sounds["select"]:play()
             self.selection = self.selection - 1
         end
-    elseif love.keyboard.wasPressed("right") or love.keyboard.wasPressed("a") then
+    elseif
+        love.keyboard.wasPressed("right")
+        or love.keyboard.wasPressed("d")
+        or love.mouse.wasPressedAt(
+            VIRTUAL_WIDTH - VIRTUAL_WIDTH / 4,
+            VIRTUAL_HEIGHT - VIRTUAL_HEIGHT / 3,
+            VIRTUAL_WIDTH - VIRTUAL_WIDTH / 4 + 24,
+            VIRTUAL_HEIGHT - VIRTUAL_HEIGHT / 3 + 24
+        )
+    then
         if self.selection == 4 then
             Sounds["no-select"]:play()
         else
@@ -21,7 +39,16 @@ function PaddleSelectState:update(dt)
         end
     end
 
-    if love.keyboard.wasPressed("return") or love.keyboard.wasPressed("space") then
+    if
+        love.keyboard.wasPressed("return")
+        or love.keyboard.wasPressed("space")
+        or love.mouse.wasPressedAt(
+            VIRTUAL_WIDTH / 2 - 32,
+            VIRTUAL_HEIGHT - VIRTUAL_HEIGHT / 3,
+            VIRTUAL_WIDTH / 2 - 32 + 64,
+            VIRTUAL_HEIGHT - VIRTUAL_HEIGHT / 3 + 16
+        )
+    then
         Sounds["confirm"]:play()
 
         GameState:change("serve", {
@@ -36,14 +63,14 @@ function PaddleSelectState:update(dt)
 
     if love.keyboard.wasPressed("escape") then
         GameState:change("start")
+        Sounds["wall-hit"]:play()
     end
 end
 
 function PaddleSelectState:render()
-    -- instructions
     love.graphics.setFont(Fonts["medium"])
     love.graphics.printf(
-        "Switch left and right to Select your paddle!",
+        "Select your paddle!",
         0,
         VIRTUAL_HEIGHT / 4,
         VIRTUAL_WIDTH,
@@ -51,7 +78,7 @@ function PaddleSelectState:render()
     )
     love.graphics.setFont(Fonts["small"])
     love.graphics.printf(
-        "(Press Space to continue!)",
+        "(" .. GetConfirmMessage() .. "to continue!)",
         0,
         VIRTUAL_HEIGHT / 3,
         VIRTUAL_WIDTH,
@@ -81,6 +108,7 @@ function PaddleSelectState:render()
         1
     )
     love.graphics.setColor(1, 1, 1, 1)
+
     love.graphics.draw(
         Textures["breakout"],
         Frames["paddles"][2 + 4 * (self.selection - 1)],

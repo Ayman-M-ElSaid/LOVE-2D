@@ -2,8 +2,8 @@ HighScoreState = Class({ __includes = BaseState })
 
 function HighScoreState:update(dt)
     if love.keyboard.wasPressed("escape") then
-        Sounds["wall-hit"]:play()
         GameState:change("start")
+        Sounds["wall-hit"]:play()
     end
 end
 
@@ -38,7 +38,7 @@ function HighScoreState:render()
 
     love.graphics.setFont(Fonts["small"])
     love.graphics.printf(
-        "Press Escape to return to the main menu!",
+        "Escape to return to the main menu!",
         0,
         VIRTUAL_HEIGHT - 18,
         VIRTUAL_WIDTH,

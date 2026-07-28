@@ -1,7 +1,6 @@
 Push = require("libs.push")
 Class = require("libs.class")
 
-require("src.constants")
 require("src.util")
 require("src.LevelMaker")
 

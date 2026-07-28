@@ -5,7 +5,11 @@ function GameOverState:enter(params)
 end
 
 function GameOverState:update(dt)
-    if love.keyboard.wasPressed("return") or love.keyboard.wasPressed("space") then
+    if
+        love.keyboard.wasPressed("return")
+        or love.keyboard.wasPressed("space")
+        or love.mouse.wasPressed(1)
+    then
         local highScore = false
         local highScoreIndex
         for i = 10, 1, -1 do
@@ -24,6 +28,7 @@ function GameOverState:update(dt)
             })
         else
             GameState:change("start")
+            Sounds["wall-hit"]:play()
         end
     end
 
@@ -44,7 +49,7 @@ function GameOverState:render()
         "center"
     )
     love.graphics.printf(
-        "Press Space to Play Again!",
+        GetConfirmMessage() .. "to Play Again!",
         0,
         VIRTUAL_HEIGHT - VIRTUAL_HEIGHT / 4,
         VIRTUAL_WIDTH,

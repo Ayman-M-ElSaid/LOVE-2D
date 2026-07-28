@@ -1,5 +1,7 @@
 Paddle = Class({})
 
+local PADDLE_SPEED = 200
+
 function Paddle:init(skin)
     self.width = 64
     self.height = 16
@@ -12,12 +14,27 @@ function Paddle:init(skin)
 end
 
 function Paddle:update(dt)
-    if love.keyboard.isDown("right") or love.keyboard.isDown("d") then
-        self.dx = PADDLE_SPEED * dt
-    elseif love.keyboard.isDown("left") or love.keyboard.isDown("a") then
-        self.dx = -PADDLE_SPEED * dt
+    if not IS_MOBILE then
+        if love.keyboard.isDown("right") or love.keyboard.isDown("d") then
+            self.dx = PADDLE_SPEED * dt
+        elseif love.keyboard.isDown("left") or love.keyboard.isDown("a") then
+            self.dx = -PADDLE_SPEED * dt
+        else
+            self.dx = 0
+        end
     else
-        self.dx = 0
+        local DEADZONE = 4
+        if love.mouse.isDown(1) then
+            local x, y = Push.toGame(love.mouse.getPosition())
+
+            if x > self.centerX + DEADZONE then
+                self.dx = PADDLE_SPEED * dt
+            elseif x < self.centerX - DEADZONE then
+                self.dx = -PADDLE_SPEED * dt
+            else
+                self.dx = 0
+            end
+        end
     end
     self.x = math.min(math.max(self.x + self.dx, 0), VIRTUAL_WIDTH - self.width)
     self.centerX = self.x + self.width / 2

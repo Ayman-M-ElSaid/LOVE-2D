@@ -20,11 +20,18 @@ function Ball:collides(target)
     return true
 end
 
-function Ball:reset()
-    self.x = VIRTUAL_WIDTH / 2 - 2
-    self.y = VIRTUAL_HEIGHT / 2 - 2
-    self.dx = 0
-    self.dy = 0
+function Ball:penetration(target)
+    local ballCenterX = self.x + self.width / 2
+    local ballCenterY = self.y + self.height / 2
+    local targetCenterX = target.centerX or (target.x + target.width / 2)
+    local targetCenterY = target.centerY or (target.y + target.height / 2)
+
+    local offsetX = targetCenterX - ballCenterX
+    local offsetY = targetCenterY - ballCenterY
+    local penetrationX = target.width / 2 + self.width / 2 - math.abs(offsetX)
+    local penetrationY = target.height / 2 + self.height / 2 - math.abs(offsetY)
+
+    return penetrationX, penetrationY, offsetX, offsetY
 end
 
 function Ball:update(dt)
