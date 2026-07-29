@@ -57,7 +57,7 @@ function love.load()
     love.window.setTitle("Breakout")
     love.window.setMode(WINDOW_WIDTH, WINDOW_HEIGHT, {
         fullscreen = false,
-        resizable = true,
+        resizable = not IS_MOBILE,
         vsync = true,
     })
     Push.setupScreen(VIRTUAL_WIDTH, VIRTUAL_HEIGHT, { upscale = "normal" })

@@ -16,10 +16,18 @@ function EnterHighScoreState:enter(params)
             Sounds["no-select"]:play()
         end
     end
+    love.keyboard.setTextInput(
+        true,
+        0,
+        0,
+        love.graphics.getWidth(),
+        love.graphics.getHeight()
+    )
 end
 
 function EnterHighScoreState:exit()
     love.textinput = nil
+    love.keyboard.setTextInput(false)
 end
 
 function EnterHighScoreState:update(dt)
@@ -27,10 +35,7 @@ function EnterHighScoreState:update(dt)
         self.name = self.name:sub(1, -2)
     end
 
-    if
-        (love.keyboard.wasPressed("return") or love.keyboard.wasPressed("space"))
-        and #self.name > 0
-    then
+    if love.keyboard.wasPressed("return") and #self.name > 0 then
         local name = self.name
 
         for i = 10, self.scoreIndex, -1 do
@@ -82,7 +87,7 @@ function EnterHighScoreState:render()
 
     love.graphics.setFont(Fonts["small"])
     love.graphics.printf(
-        GetConfirmMessage() .. "to confirm!",
+        "Press Enter to confirm!",
         0,
         VIRTUAL_HEIGHT - 18,
         VIRTUAL_WIDTH,

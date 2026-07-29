@@ -6,6 +6,15 @@ function VictoryState:enter(params)
     self.paddle = params.paddle
     self.health = params.health
     self.ball = params.ball
+    love.filesystem.write(
+        "level.dat",
+        string.format(
+            "level,%d\nhealth,%d\nscore,%d",
+            self.level + 1,
+            self.health,
+            self.score
+        )
+    )
 end
 
 function VictoryState:update(dt)

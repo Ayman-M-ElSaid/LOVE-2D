@@ -2,6 +2,7 @@ GameOverState = Class({ __includes = BaseState })
 
 function GameOverState:enter(params)
     self.score = params.score
+    love.filesystem.write("level.dat", "level,1\nhealth,3\nscore,0")
 end
 
 function GameOverState:update(dt)

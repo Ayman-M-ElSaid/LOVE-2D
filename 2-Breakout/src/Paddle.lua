@@ -23,19 +23,22 @@ function Paddle:update(dt)
             self.dx = 0
         end
     else
+        self.dx = 0
         local DEADZONE = 4
+
         if love.mouse.isDown(1) then
             local x, y = Push.toGame(love.mouse.getPosition())
-
-            if x > self.centerX + DEADZONE then
-                self.dx = PADDLE_SPEED * dt
-            elseif x < self.centerX - DEADZONE then
-                self.dx = -PADDLE_SPEED * dt
-            else
-                self.dx = 0
+            if x then
+                local scale = 1 + 1.5 * math.min(math.abs(self.centerX - x)/VIRTUAL_WIDTH,1)
+                if x > self.centerX + DEADZONE then
+                    self.dx = PADDLE_SPEED * scale * dt
+                elseif x < self.centerX - DEADZONE then
+                    self.dx = -PADDLE_SPEED * scale * dt
+                end
             end
         end
     end
+
     self.x = math.min(math.max(self.x + self.dx, 0), VIRTUAL_WIDTH - self.width)
     self.centerX = self.x + self.width / 2
 end

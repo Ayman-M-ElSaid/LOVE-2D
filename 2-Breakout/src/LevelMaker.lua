@@ -12,7 +12,7 @@ function LevelMaker.createMap(level)
     local highestTier = math.min(4, math.floor(level / 5) + 1)
 
     for y = 1, rows do
-        local skipRow = rows > 4 and math.random(0, 1) or false
+        local skipRow = rows > 4 and math.random(1, 10) or 0
         if skipRow == 1 then
             goto continue_rows
         end

@@ -1,7 +1,26 @@
 PaddleSelectState = Class({ __includes = BaseState })
 
+local function loadLevelData()
+    if not love.filesystem.getInfo("level.dat") then
+        love.filesystem.write("level.dat", "level,1\nhealth,3\nscore,0")
+    end
+
+    local data = { level = 1, health = 3, score = 0 }
+
+    for line in love.filesystem.lines("level.dat") do
+        local key, value = line:match("^(%a+),(%d+)$")
+
+        if key and value and data[key] ~= nil then
+            data[key] = tonumber(value)
+        end
+    end
+
+    return data.level, data.health, data.score
+end
+
 function PaddleSelectState:init()
     self.selection = 1
+    self.level, self.health, self.score = loadLevelData()
 end
 
 function PaddleSelectState:update(dt)
@@ -54,10 +73,10 @@ function PaddleSelectState:update(dt)
         GameState:change("serve", {
             paddle = Paddle(self.selection),
             ball = Ball(self.selection),
-            bricks = LevelMaker.createMap(1),
-            health = 3,
-            score = 0,
-            level = 1,
+            bricks = LevelMaker.createMap(self.level),
+            health = self.health,
+            score = self.score,
+            level = self.level,
         })
     end
 
