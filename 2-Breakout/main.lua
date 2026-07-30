@@ -84,6 +84,7 @@ function love.load()
         ["paddles"] = GeneratePaddleQuads(),
         ["balls"] = GenerateBallQuads(),
         ["bricks"] = GenerateBrickQuads(),
+        ["power-ups"] = GeneratePowerUpQuads(),
     }
 
     GameState = StateMachine({
@@ -147,11 +148,13 @@ end
 function love.mouse.wasPressedAt(x1, y1, x2, y2)
     local x, y = love.mouse.getPosition()
     local mouseX, mouseY = Push.toGame(x, y)
-    return love.mouse.wasPressed(1)
-        and mouseX >= x1
-        and mouseX <= x2
-        and mouseY >= y1
-        and mouseY <= y2
+    if mouseX and mouseY then
+        return love.mouse.wasPressed(1)
+            and mouseX >= x1
+            and mouseX <= x2
+            and mouseY >= y1
+            and mouseY <= y2
+    end
 end
 
 function love.update(dt)
@@ -173,8 +176,8 @@ function love.draw()
         VIRTUAL_WIDTH / (backgroundWidth - 1),
         VIRTUAL_HEIGHT / (backgroundHeight - 1)
     )
-
     GameState:render()
+
     Push.finish()
 end
 
@@ -184,7 +187,7 @@ function GetConfirmMessage()
 end
 
 function RenderHealth(health)
-    local healthX = VIRTUAL_WIDTH - 100
+    local healthX = 5
 
     for _ = 1, health do
         love.graphics.draw(Textures["heart"], healthX, 4)

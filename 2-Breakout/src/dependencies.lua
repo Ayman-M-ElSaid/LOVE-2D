@@ -17,3 +17,4 @@ require("src.states.PaddleSelectState")
 
 Paddle = require("src.Paddle")
 Ball = require("src.Ball")
+PowerUp = require("src.PowerUp")

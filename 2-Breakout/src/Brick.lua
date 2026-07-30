@@ -24,6 +24,7 @@ function Brick:init(x, y, color, tier)
     self.tier = tier
     self.originalTier = tier
     self.inPlay = true
+    self.isLocked = false
     self.score = color * 25 + (tier - 1) * 200
 
     self.particles = love.graphics.newParticleSystem(Textures["particle"], 64)
@@ -76,6 +77,9 @@ function Brick:render()
             self.x,
             self.y
         )
+        if self.isLocked then
+            love.graphics.draw(Textures["locked-brick"], self.x, self.y)
+        end
     end
 end
 

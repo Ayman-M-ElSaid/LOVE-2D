@@ -132,6 +132,6 @@ function PaddleSelectState:render()
         Textures["breakout"],
         Frames["paddles"][2 + 4 * (self.selection - 1)],
         VIRTUAL_WIDTH / 2 - 32,
-        VIRTUAL_HEIGHT - VIRTUAL_HEIGHT / 3
+        VIRTUAL_HEIGHT - VIRTUAL_HEIGHT / 3 + 5
     )
 end

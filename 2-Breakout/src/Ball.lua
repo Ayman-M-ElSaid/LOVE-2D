@@ -1,13 +1,16 @@
 Ball = Class({})
 
-function Ball:init(skin)
-    self.x = VIRTUAL_WIDTH / 2 - 4
-    self.y = VIRTUAL_HEIGHT - 42
-    self.width = 8
-    self.height = 8
+function Ball:init(skin, x, y)
+    self.x = x or VIRTUAL_WIDTH / 2 - 4
+    self.y = y or VIRTUAL_HEIGHT - 42
+    self.scale = 1
+    self.width = 8 * self.scale
+    self.height = 8 * self.scale
     self.dx = 0
     self.dy = 0
     self.skin = skin
+    self.dx = math.random(-250, 250)
+    self.dy = math.random(-50, -60)
 end
 
 function Ball:collides(target)
@@ -44,7 +47,7 @@ function Ball:update(dt)
         if self.x <= 0 then
             self.x = 0
         else
-            self.x = VIRTUAL_WIDTH - 8
+            self.x = VIRTUAL_WIDTH - self.width
         end
     end
 
@@ -55,8 +58,22 @@ function Ball:update(dt)
     end
 end
 
+function Ball:changeScale(scale)
+    self.scale = scale
+    self.width = 8 * self.scale
+    self.height = 8 * self.scale
+end
+
 function Ball:render()
-    love.graphics.draw(Textures["breakout"], Frames["balls"][self.skin], self.x, self.y)
+    love.graphics.draw(
+        Textures["breakout"],
+        Frames["balls"][self.skin],
+        self.x,
+        self.y,
+        0,
+        self.scale,
+        self.scale
+    )
 end
 
 return Ball

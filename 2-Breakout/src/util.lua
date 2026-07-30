@@ -39,19 +39,27 @@ function GenerateBallQuads(sheet)
     return quads
 end
 
-function GenerateBrickQuads(sheet)
-    sheet = sheet or Textures["breakout"]
-
+function GenerateQuads(sheet, x1, y1, x2, y2, w, h)
     local quads = {}
     local counter = 1
 
-    for y = 0, 48, 16 do
-        for x = 0, 160, 32 do
-            quads[counter] = love.graphics.newQuad(x, y, 32, 16, sheet)
+    for y = y1, y2 - h, h do
+        for x = x1, x2 - w, w do
+            quads[counter] = love.graphics.newQuad(x, y, w, h, sheet)
             counter = counter + 1
         end
     end
 
-    quads = { unpack(quads, 1, 20) }
     return quads
+end
+
+function GenerateBrickQuads(sheet)
+    sheet = sheet or Textures["breakout"]
+    local quads = GenerateQuads(sheet, 0, 0, 192, 64, 32, 16)
+    return { unpack(quads, 1, 20) }
+end
+
+function GeneratePowerUpQuads(sheet)
+    sheet = sheet or Textures["breakout"]
+    return GenerateQuads(sheet, 0, 192, 160, 208, 16, 16)
 end

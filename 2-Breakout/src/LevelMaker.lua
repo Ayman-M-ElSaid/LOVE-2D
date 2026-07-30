@@ -27,6 +27,8 @@ function LevelMaker.createMap(level)
         local alternateTier1 = math.random(1, highestTier)
         local alternateTier2 = math.random(1, highestTier)
 
+        local lockedBricks = (level > 15 and y ~= rows) and math.random(1, 10) or 0
+
         for x = 0, columns - 1 do
             skipFlag = not skipFlag
             if skipPattern and skipFlag then
@@ -47,11 +49,11 @@ function LevelMaker.createMap(level)
                 color = alternateColor1
                 tier = alternateTier1
             end
-
-            table.insert(
-                bricks,
-                Brick(x * 32 + 8 + 16 * (13 - columns), 16 * y, color, tier)
-            )
+            local brick = Brick(x * 32 + 8 + 16 * (13 - columns), 16 * y, color, tier)
+            if lockedBricks == 1 then
+                brick.isLocked = true
+            end
+            table.insert(bricks, brick)
             ::continue_cols::
         end
         ::continue_rows::
