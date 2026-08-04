@@ -7,9 +7,9 @@ end
 
 function StateMachine:change(stateName, enterParams)
     assert(self.states[stateName])
+    self.current:exit()
     self.current = self.states[stateName]()
     self.current:enter(enterParams)
-    self.current:exit()
 end
 
 function StateMachine:update(dt)

@@ -19,20 +19,10 @@ function StartState:init()
         "Quit",
         { 0.16, 0.24, 0.20, 1.0 }
     )
-    self.musicButton = Button(
-        Textures["music"],
-        0.1,
-        0.96 * VIRTUAL_WIDTH,
-        0.065 * VIRTUAL_HEIGHT,
-        { 1, 1, 1, 0.88 }
-    )
-    self.sfxButton = Button(
-        Textures["sfx"],
-        0.1,
-        0.96 * VIRTUAL_WIDTH,
-        0.175 * VIRTUAL_HEIGHT,
-        { 1, 1, 1, 0.88 }
-    )
+    self.musicButton =
+        Button(Textures["music"], 0.1, 0.96 * VIRTUAL_WIDTH, 0.065 * VIRTUAL_HEIGHT)
+    self.sfxButton =
+        Button(Textures["sfx"], 0.1, 0.96 * VIRTUAL_WIDTH, 0.175 * VIRTUAL_HEIGHT)
 end
 
 function StartState:update(dt)
@@ -68,7 +58,7 @@ function StartState:render()
     self.sfxButton:render()
     if not Music then
         love.graphics.setLineWidth(3)
-        love.graphics.setColor(1, 0, 0, 0.88)
+        love.graphics.setColor(1, 0, 0, 0.8)
         love.graphics.line(
             self.musicButton.left,
             self.musicButton.bottom,
@@ -80,7 +70,7 @@ function StartState:render()
     end
     if not SFX then
         love.graphics.setLineWidth(3)
-        love.graphics.setColor(1, 0, 0, 0.88)
+        love.graphics.setColor(1, 0, 0, 0.8)
         love.graphics.line(
             self.sfxButton.left,
             self.sfxButton.bottom,

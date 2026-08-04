@@ -3,15 +3,7 @@ PlayState = Class({ __includes = BaseState })
 function PlayState:init()
     self.hasEnded = false
     self.isPaused = false
-    self.pauseButton = Button(
-        Textures["button"],
-        0.2,
-        0.2 * VIRTUAL_WIDTH,
-        0.85 * VIRTUAL_HEIGHT,
-        { 0.93, 0.72, 0.28, 1.0 },
-        "Pause",
-        { 0.10, 0.25, 0.22, 1.0 }
-    )
+    self.isReshuffling = false
     self.uiRect = {
         mode = "fill",
         x = 0.025 * VIRTUAL_WIDTH,
@@ -20,6 +12,71 @@ function PlayState:init()
         height = 0.35 * VIRTUAL_HEIGHT,
         rx = 4,
     }
+    self.pauseButton = Button(
+        Textures["button"],
+        0.2,
+        0.225 * VIRTUAL_WIDTH,
+        0.85 * VIRTUAL_HEIGHT,
+        { 0.93, 0.72, 0.28, 1.0 },
+        "Pause",
+        { 0.10, 0.25, 0.22, 1.0 }
+    )
+    self.pauseMenuRect = {
+        mode = "fill",
+        x = 0.325 * VIRTUAL_WIDTH,
+        y = 0.15 * VIRTUAL_HEIGHT,
+        width = 0.35 * VIRTUAL_WIDTH,
+        height = VIRTUAL_HEIGHT / 1.5,
+        rx = 4,
+    }
+    self.pauseMenuShadow = {
+        mode = "fill",
+        x = 0.325 * VIRTUAL_WIDTH - 2,
+        y = 0.15 * VIRTUAL_HEIGHT - 2,
+        width = 0.35 * VIRTUAL_WIDTH + 4,
+        height = VIRTUAL_HEIGHT / 1.5 + 4,
+        rx = 4,
+    }
+    self.musicButton = Button(
+        Textures["music"],
+        0.09,
+        self.pauseMenuRect.x + 0.4 * self.pauseMenuRect.width,
+        self.pauseMenuRect.y * 2
+    )
+    self.sfxButton = Button(
+        Textures["sfx"],
+        0.09,
+        self.pauseMenuRect.x + 0.6 * self.pauseMenuRect.width,
+        self.pauseMenuRect.y * 2
+    )
+    self.resumeButton = Button(
+        Textures["button"],
+        0.2,
+        self.pauseMenuRect.x + self.pauseMenuRect.width / 2,
+        self.pauseMenuRect.y * 2.75,
+        { 0.30, 0.72, 0.45, 1.0 },
+        "Resume",
+        { 0.06, 0.22, 0.16, 1.0 }
+    )
+    self.restartButton = Button(
+        Textures["button"],
+        0.2,
+        self.pauseMenuRect.x + self.pauseMenuRect.width / 2,
+        self.pauseMenuRect.y * 3.75,
+        { 0.95, 0.68, 0.22, 1.0 },
+        "Restart",
+        { 0.10, 0.23, 0.20, 1.0 }
+    )
+    self.quitButton = Button(
+        Textures["button"],
+        0.2,
+        self.pauseMenuRect.x + self.pauseMenuRect.width / 2,
+        self.pauseMenuRect.y * 4.75,
+        { 0.85, 0.27, 0.23, 1.0 },
+        "Quit",
+        { 1.00, 0.94, 0.78, 1.0 }
+    )
+
     self.timerGroup = {}
     Timer.every(1, function()
         self.timer = self.timer - 1
@@ -40,8 +97,37 @@ end
 
 local function handlePause(self)
     if self.pauseButton:isClicked() then
-        self.isPaused = not self.isPaused
+        self.isPaused = true
     end
+    if self.isPaused then
+        if self.resumeButton:isClicked() then
+            self.isPaused = false
+        elseif self.restartButton:isClicked() then
+            Transition.to("begin-level", { level = self.level })
+        elseif self.quitButton:isClicked() then
+            Transition.to("start")
+        elseif self.sfxButton:isClicked() then
+            SFX = not SFX
+        elseif self.musicButton:isClicked() then
+            Music = not Music
+            if Music then
+                Sounds["music"]:play()
+            else
+                Sounds["music"]:stop()
+            end
+        end
+    end
+end
+
+local function reshuffleBoard(self)
+    local tweens = self.board:reshuffle()
+    Timer.tween(0.4, tweens):group(self.timerGroup):finish(function()
+        if not self.board:hasPossibleMoves() then
+            reshuffleBoard(self)
+        else
+            self.isReshuffling = false
+        end
+    end)
 end
 
 local function checkMatches(self)
@@ -60,6 +146,9 @@ local function checkMatches(self)
         Timer.tween(0.25, tilesToFall):group(self.timerGroup):finish(function()
             checkMatches(self)
         end)
+    elseif not self.board:hasPossibleMoves() then
+        self.isReshuffling = true
+        reshuffleBoard(self)
     end
 end
 
@@ -218,10 +307,52 @@ local function renderUI(self)
     love.graphics.pop()
 end
 
-local function renderPauseMessage()
-    love.graphics.setFont(Fonts["title"])
+local function renderPauseMenu(self)
+    love.graphics.setColor({ 0.08, 0.22, 0.19, 0.65 })
+    DrawRect(self.pauseMenuShadow)
+    love.graphics.setColor(0.94, 0.88, 0.72, 0.96)
+    DrawRect(self.pauseMenuRect)
+
+    self.resumeButton:render()
+    self.restartButton:render()
+    self.quitButton:render()
+    self.musicButton:render()
+    if not Music then
+        love.graphics.setLineWidth(3)
+        love.graphics.setColor(1, 0, 0, 0.8)
+        love.graphics.line(
+            self.musicButton.left,
+            self.musicButton.bottom,
+            self.musicButton.right,
+            self.musicButton.top
+        )
+        love.graphics.setColor(1, 1, 1, 1)
+        love.graphics.setLineWidth(1)
+    end
+    self.sfxButton:render()
+    if not SFX then
+        love.graphics.setLineWidth(3)
+        love.graphics.setColor(1, 0, 0, 0.8)
+        love.graphics.line(
+            self.sfxButton.left,
+            self.sfxButton.bottom,
+            self.sfxButton.right,
+            self.sfxButton.top
+        )
+        love.graphics.setColor(1, 1, 1, 1)
+        love.graphics.setLineWidth(1)
+    end
+
+    love.graphics.setFont(Fonts["large"])
+    love.graphics.setColor(0.08, 0.22, 0.19, 1.0)
+    PrintfScaled(
+        "<PAUSED>",
+        self.pauseMenuRect.x,
+        self.pauseMenuRect.y + 2,
+        self.pauseMenuRect.width,
+        "center"
+    )
     love.graphics.setColor(1, 1, 1, 1)
-    PrintfScaled("PAUSED", 0, VIRTUAL_HEIGHT / 2 - 20, VIRTUAL_WIDTH, "center")
 end
 
 function PlayState:render()
@@ -229,6 +360,19 @@ function PlayState:render()
     self.pauseButton:render()
     renderUI(self)
     if self.isPaused then
-        renderPauseMessage()
+        renderPauseMenu(self)
+    end
+    if self.isReshuffling then
+        love.graphics.setFont(Fonts["large"])
+        love.graphics.setColor(0.08, 0.20, 0.16, 0.65)
+        PrintfScaled("<Reshuffling>", 0, VIRTUAL_HEIGHT / 2, VIRTUAL_WIDTH, "center")
+        love.graphics.setColor(1, 1, 1, 1)
+        PrintfScaled(
+            "<Reshuffling>",
+            -2,
+            VIRTUAL_HEIGHT / 2 - 2,
+            VIRTUAL_WIDTH,
+            "center"
+        )
     end
 end

@@ -183,6 +183,62 @@ function Board:getFallingTiles()
     return tweens
 end
 
+--- Checks whether any adjacent tile swap can create a match.
+---@return boolean Whether a possible matching move exists.
+function Board:hasPossibleMoves()
+    for row = 1, self.rows do
+        for col = 1, self.cols do
+            if col < self.cols then
+                -- swap two adjacent tiles on the same row
+                self.tiles[row][col], self.tiles[row][col + 1] =
+                    self.tiles[row][col + 1], self.tiles[row][col]
+                -- ater a hypothetical swap, check if there is any matches
+                local found = self:checkMatches()
+                -- swap back regardless, as this is just a possibility check.
+                self.tiles[row][col], self.tiles[row][col + 1] =
+                    self.tiles[row][col + 1], self.tiles[row][col]
+                if found then
+                    return true
+                end
+            end
+            -- do the same steps for tiles in the same column
+            if row < self.rows then
+                self.tiles[row][col], self.tiles[row + 1][col] =
+                    self.tiles[row + 1][col], self.tiles[row][col]
+                local found = self:checkMatches()
+                self.tiles[row][col], self.tiles[row + 1][col] =
+                    self.tiles[row + 1][col], self.tiles[row][col]
+                if found then
+                    return true
+                end
+            end
+        end
+    end
+    return false
+end
+
+--- Replaces all tiles with new random tiles and prepares them to fall onto the board.
+---@return table tweens A table containing the target positions of the new tiles.
+function Board:reshuffle()
+    local tweens = {}
+    for row = 1, self.rows do
+        for col = 1, self.cols do
+            local newTile = Fruit(
+                love.math.random(8),
+                self.tileSize / 128,
+                col,
+                row,
+                self.x,
+                self.y
+            )
+            newTile.y = self.y - self.tileSize * row
+            self.tiles[row][col] = newTile
+            tweens[newTile] = { y = self.y + (row - 1) * self.tileSize }
+        end
+    end
+    return tweens
+end
+
 --- Renders the board background and all fruit tiles.
 function Board:render()
     love.graphics.setColor(0.3, 0.3, 0.3, 0.8)

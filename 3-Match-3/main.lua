@@ -72,11 +72,6 @@ function love.load()
     love.mouse.buttonsReleased = {}
 end
 
-function love.keypressed(key)
-    if key == "escape" then
-        love.event.quit()
-    end
-end
 function love.mousepressed(x, y, button)
     love.mouse.buttonsPressed[button] = true
 end
