@@ -23,6 +23,10 @@ function love.load()
             "assets/fonts/Butterpop.otf",
             16 * FONT_SCALE
         ),
+        ["large"] = love.graphics.newFont(
+            "assets/fonts/Butterpop.otf",
+            24 * FONT_SCALE
+        ),
     }
 
     Music, SFX = true, true
@@ -64,22 +68,15 @@ function love.load()
     Sounds["music"]:setLooping(true)
     Sounds["music"]:play()
 
-    love.keyboard.keysPressed = {}
     love.mouse.buttonsPressed = {}
-end
-
-function love.resize(w, h)
-    Push.resize(w, h)
+    love.mouse.buttonsReleased = {}
 end
 
 function love.keypressed(key)
-    love.keyboard.keysPressed[key] = true
+    if key == "escape" then
+        love.event.quit()
+    end
 end
-
-function love.keyboard.wasPressed(key)
-    return love.keyboard.keysPressed[key]
-end
-
 function love.mousepressed(x, y, button)
     love.mouse.buttonsPressed[button] = true
 end
@@ -88,11 +85,19 @@ function love.mouse.wasPressed(button)
     return love.mouse.buttonsPressed[button]
 end
 
+function love.mousereleased(x, y, button)
+    love.mouse.buttonsReleased[button] = true
+end
+
+function love.mouse.wasReleased(button)
+    return love.mouse.buttonsReleased[button]
+end
+
 function love.update(dt)
     GameState:update(dt)
     Timer.update(dt)
-    love.keyboard.keysPressed = {}
     love.mouse.buttonsPressed = {}
+    love.mouse.buttonsReleased = {}
 end
 
 function love.draw()

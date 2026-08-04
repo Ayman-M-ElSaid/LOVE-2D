@@ -1,5 +1,12 @@
 Fruit = Class({})
 
+--- Creates a new fruit.
+---@param id number The ID of the fruit's sprite frame.
+---@param scale number The scale at which to render the fruit.
+---@param x number The fruit's starting grid position along the x-axis.
+---@param y number The fruit's starting grid position along the y-axis.
+---@param offsetX number The x-axis offset of the board.
+---@param offsetY number The y-axis offset of the board.
 function Fruit:init(id, scale, x, y, offsetX, offsetY)
     self.id = id
     self.scale = scale
@@ -12,11 +19,10 @@ function Fruit:init(id, scale, x, y, offsetX, offsetY)
     self.y = (self.gridY - 1) * self.height + offsetY
 end
 
-function Fruit:update() end
-
+--- Renders the fruit using its corresponding sprite frame.
 function Fruit:render()
     love.graphics.draw(
-    Textures["fruits"],
+        Textures["fruits"],
         Frames["fruits"][self.id],
         self.x,
         self.y,

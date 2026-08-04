@@ -47,9 +47,7 @@ function StartState:update(dt)
         end
     elseif self.sfxButton:isClicked() then
         SFX = not SFX
-    end
-
-    if love.keyboard.wasPressed("escape") or self.quitButton:isClicked() then
+    elseif self.quitButton:isClicked() then
         love.event.quit()
     end
 end

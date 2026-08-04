@@ -3,11 +3,10 @@ Class = require("libs.class")
 Timer = require("libs.knife-timer")
 
 Button = require("src.Button")
-Board=require("src.Board")
-Fruit=require("src.Fruit")
+Board = require("src.Board")
+Fruit = require("src.Fruit")
 
 require("src.util")
-
 require("src.Transition")
 require("src.StateMachine")
 

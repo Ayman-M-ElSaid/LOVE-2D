@@ -1,25 +1,30 @@
-BeginLevelState = Class({})
+BeginLevelState = Class({ __includes = BaseState })
 
 function BeginLevelState:init()
-    self.labelY = -48
+    self.labelY = -60
 end
 
 function BeginLevelState:enter(params)
     self.level = params.level
-    Timer.tween(0.5, { [self] = { labelY = VIRTUAL_HEIGHT / 2 - 32 } })
+    self.score = params.score or 0
+    self.board = params.board
+    Timer.tween(0.5, { [self] = { labelY = VIRTUAL_HEIGHT / 2 - 24 } })
         :finish(function()
             Timer.after(0.75, function()
                 Timer.tween(0.5, { [self] = { labelY = VIRTUAL_HEIGHT } })
                     :finish(function()
-                        GameState:change("play", { level = self.level })
+                        GameState:change("play", {
+                            level = self.level,
+                            score = self.score,
+                            board = self.board,
+                        })
                     end)
             end)
         end)
 end
 
-function BeginLevelState:update() end
 function BeginLevelState:render()
-    love.graphics.setColor(95 / 255, 205 / 255, 228 / 255, 200 / 255)
+    love.graphics.setColor(0.37, 0.8, 0.89, 0.78)
     love.graphics.rectangle("fill", 0, self.labelY, VIRTUAL_WIDTH, 48)
     love.graphics.setColor(1, 1, 1, 1)
     love.graphics.setFont(Fonts["button"])

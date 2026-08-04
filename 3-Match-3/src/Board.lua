@@ -1,5 +1,11 @@
 Board = Class({})
 
+--- Creates a new game board.
+---@param rows number The number of rows on the board.
+---@param cols number The number of columns on the board.
+---@param scale number The scale at which to render the board tiles.
+---@param centerX number The x-coordinate of the board's center.
+---@param centerY number The y-coordinate of the board's center.
 function Board:init(rows, cols, scale, centerX, centerY)
     self.rows, self.cols = rows, cols
     self.scale = scale
@@ -10,6 +16,7 @@ function Board:init(rows, cols, scale, centerX, centerY)
     self:initializeTiles()
 end
 
+--- Creates the board's initial set of fruit tiles.
 function Board:initializeTiles()
     self.tiles = {}
 
@@ -31,14 +38,18 @@ function Board:initializeTiles()
         end
     end
 
+    -- recreates the board until no initial matches are present.
     while self:checkMatches() do
         self:initializeTiles()
     end
 end
 
+--- Checks the board for horizontal and vertical matches of three or more fruits.
+---@return table|boolean The detected matches, or false if no matches are found.
 function Board:checkMatches()
     local matches = {}
     local matchNum = 1
+    -- check horizontal matches
     for row = 1, self.rows do
         local colorToMatch = self.tiles[row][1].id
         matchNum = 1
@@ -68,7 +79,7 @@ function Board:checkMatches()
             table.insert(matches, match)
         end
     end
-
+    -- check vertical matches
     for col = 1, self.cols do
         local colorToMatch = self.tiles[1][col].id
         matchNum = 1
@@ -103,6 +114,7 @@ function Board:checkMatches()
     return #self.matches > 0 and self.matches or false
 end
 
+--- Removes all currently detected matches from the board.
 function Board:removeMatches()
     for _, match in ipairs(self.matches) do
         for _, tile in ipairs(match) do
@@ -112,20 +124,24 @@ function Board:removeMatches()
     self.matches = nil
 end
 
+--- Moves existing tiles down to fill empty spaces and creates new tiles.
+---@return table tweens A table containing the target positions of falling and new tiles.
 function Board:getFallingTiles()
     local tweens = {}
-
+    -- fill empty spaces by moving existing fruits downward
     for col = 1, self.cols do
         local spaceFound = false
         local spaceY = 0
         local row = self.rows
         while row >= 1 do
             local tile = self.tiles[row][col]
+            -- if there is an empty space, store its position
             if tile == nil then
                 spaceFound = true
                 if spaceY == 0 then
                     spaceY = row
                 end
+            -- if tile is found and found an empty space below it, swap the tile with empty space
             elseif spaceFound then
                 if tile then
                     self.tiles[spaceY][col] = tile
@@ -142,7 +158,7 @@ function Board:getFallingTiles()
             row = row - 1
         end
     end
-
+    -- create new fruits to fill the empty spaces at top
     for col = 1, self.cols do
         for row = self.rows, 1, -1 do
             local tile = self.tiles[row][col]
@@ -167,6 +183,7 @@ function Board:getFallingTiles()
     return tweens
 end
 
+--- Renders the board background and all fruit tiles.
 function Board:render()
     love.graphics.setColor(0.3, 0.3, 0.3, 0.8)
     for row = 1, self.rows do
