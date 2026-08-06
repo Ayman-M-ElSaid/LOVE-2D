@@ -1,8 +1,9 @@
 PlayState = Class({ __includes = BaseState })
 
 function PlayState:init()
-    self.hasEnded = false
     self.isPaused = false
+    self.hasEnded = false
+    self.isTweening = false
     self.isReshuffling = false
     self.uiRect = {
         mode = "fill",
@@ -95,102 +96,7 @@ function PlayState:enter(params)
     self.timer = math.floor(60 * 0.95 ^ (self.level - 1))
 end
 
-local function handlePause(self)
-    if self.pauseButton:isClicked() then
-        self.isPaused = true
-    end
-    if self.isPaused then
-        if self.resumeButton:isClicked() then
-            self.isPaused = false
-        elseif self.restartButton:isClicked() then
-            Transition.to("begin-level", { level = self.level })
-        elseif self.quitButton:isClicked() then
-            Transition.to("start")
-        elseif self.sfxButton:isClicked() then
-            SFX = not SFX
-        elseif self.musicButton:isClicked() then
-            Music = not Music
-            if Music then
-                Sounds["music"]:play()
-            else
-                Sounds["music"]:stop()
-            end
-        end
-    end
-end
-
-local function reshuffleBoard(self)
-    local tweens = self.board:reshuffle()
-    Timer.tween(0.4, tweens):group(self.timerGroup):finish(function()
-        if not self.board:hasPossibleMoves() then
-            reshuffleBoard(self)
-        else
-            self.isReshuffling = false
-        end
-    end)
-end
-
-local function checkMatches(self)
-    local matches = self.board:checkMatches()
-    if matches then
-        if SFX then
-            Sounds["match"]:stop()
-            Sounds["match"]:play()
-        end
-        for _, match in pairs(matches) do
-            self.score = self.score + #match * 25
-            self.timer = math.min(60, self.timer + #match)
-        end
-        self.board:removeMatches()
-        local tilesToFall = self.board:getFallingTiles()
-        Timer.tween(0.25, tilesToFall):group(self.timerGroup):finish(function()
-            checkMatches(self)
-        end)
-    elseif not self.board:hasPossibleMoves() then
-        self.isReshuffling = true
-        reshuffleBoard(self)
-    end
-end
-
-local function trySwap(self, row1, col1, row2, col2)
-    local board = self.board
-    local tile1 = board.tiles[row1][col1]
-    local tile2 = board.tiles[row2][col2]
-
-    board.tiles[row1][col1] = tile2
-    board.tiles[row2][col2] = tile1
-
-    tile1.gridX, tile2.gridX = tile2.gridX, tile1.gridX
-    tile1.gridY, tile2.gridY = tile2.gridY, tile1.gridY
-
-    local x1, y1 = tile1.x, tile1.y
-    local x2, y2 = tile2.x, tile2.y
-
-    Timer.tween(0.15, {
-        [tile1] = { x = x2, y = y2 },
-        [tile2] = { x = x1, y = y1 },
-    })
-        :group(self.timerGroup)
-        :finish(function()
-            if board:checkMatches() then
-                checkMatches(self)
-            else
-                board.tiles[row1][col1] = tile1
-                board.tiles[row2][col2] = tile2
-                tile1.gridX, tile2.gridX = tile2.gridX, tile1.gridX
-                tile1.gridY, tile2.gridY = tile2.gridY, tile1.gridY
-                if SFX then
-                    Sounds["error"]:play()
-                end
-                Timer.tween(0.15, {
-                    [tile1] = { x = x1, y = y1 },
-                    [tile2] = { x = x2, y = y2 },
-                }):group(self.timerGroup)
-            end
-        end)
-end
-
-local function swapTiles(self)
+function PlayState:swapTiles()
     local mouseX, mouseY = Push.toGame(love.mouse.getPosition())
     if not mouseX or not mouseY then
         return
@@ -232,15 +138,121 @@ local function swapTiles(self)
             and targetCol >= 1
             and targetCol <= self.board.cols
         then
-            trySwap(self, row, col, targetRow, targetCol)
+            self:trySwap(row, col, targetRow, targetCol)
         end
 
         self.dragging = false
     end
 end
 
-local function checkWin(self)
-    if self.hasEnded then
+function PlayState:trySwap(row1, col1, row2, col2)
+    self.isTweening = true
+    local board = self.board
+    local tile1 = board.tiles[row1][col1]
+    local tile2 = board.tiles[row2][col2]
+
+    board.tiles[row1][col1] = tile2
+    board.tiles[row2][col2] = tile1
+
+    tile1.gridX, tile2.gridX = tile2.gridX, tile1.gridX
+    tile1.gridY, tile2.gridY = tile2.gridY, tile1.gridY
+
+    local x1, y1 = tile1.x, tile1.y
+    local x2, y2 = tile2.x, tile2.y
+
+    Timer.tween(0.15, {
+        [tile1] = { x = x2, y = y2 },
+        [tile2] = { x = x1, y = y1 },
+    })
+        :group(self.timerGroup)
+        :finish(function()
+            if board:checkSpecialMatches(tile1, tile2) or board:checkMatches() then
+                self:checkMatches()
+            else
+                board.tiles[row1][col1] = tile1
+                board.tiles[row2][col2] = tile2
+                tile1.gridX, tile2.gridX = tile2.gridX, tile1.gridX
+                tile1.gridY, tile2.gridY = tile2.gridY, tile1.gridY
+                if SFX then
+                    Sounds["error"]:play()
+                end
+                Timer.tween(0.15, {
+                    [tile1] = { x = x1, y = y1 },
+                    [tile2] = { x = x2, y = y2 },
+                })
+                    :group(self.timerGroup)
+                    :finish(function()
+                        self.isTweening = false
+                    end)
+            end
+        end)
+end
+
+function PlayState:checkMatches()
+    if SFX then
+        Sounds["match"]:stop()
+        Sounds["match"]:play()
+    end
+
+    local removedTiles = self.board:removeMatches()
+    self.score = self.score + removedTiles * 25
+    self.timer = math.min(60, self.timer + removedTiles)
+
+    local tilesToFall = self.board:getFallingTiles()
+    Timer.tween(0.25, tilesToFall):group(self.timerGroup):finish(function()
+        if self.board:checkMatches() then
+            self:checkMatches()
+        elseif not self.board:hasPossibleMoves() then
+            self.isReshuffling = true
+            self:reshuffleBoard()
+        else
+            self.isTweening = false
+        end
+    end)
+end
+
+function PlayState:reshuffleBoard()
+    local tweens = self.board:reshuffle()
+    Timer.tween(1, tweens):group(self.timerGroup):finish(function()
+        self.isReshuffling = false
+
+        if self.board:checkMatches() then
+            self:checkMatches()
+        elseif not self.board:hasPossibleMoves() then
+            self.isReshuffling = true
+            self:reshuffleBoard()
+        else
+            self.isTweening = false
+        end
+    end)
+end
+
+function PlayState:handlePause()
+    if self.pauseButton:isClicked() then
+        self.isPaused = true
+    end
+    if self.isPaused then
+        if self.resumeButton:isClicked() then
+            self.isPaused = false
+        elseif self.restartButton:isClicked() then
+            Transition.to("begin-level", { level = 1 })
+        elseif self.quitButton:isClicked() then
+            Transition.to("start")
+        elseif self.sfxButton:isClicked() then
+            SFX = not SFX
+        elseif self.musicButton:isClicked() then
+            Music = not Music
+            if Music then
+                Sounds["music"]:play()
+            else
+                Sounds["music"]:stop()
+            end
+        end
+    end
+end
+
+function PlayState:checkWin()
+    if self.hasEnded or self.isTweening then
         return
     end
     if self.score >= self.scoreGoal then
@@ -256,8 +268,8 @@ local function checkWin(self)
     end
 end
 
-local function checkLoss(self)
-    if self.hasEnded then
+function PlayState:checkLoss()
+    if self.hasEnded or self.isTweening then
         return
     end
     if self.timer <= 0 then
@@ -270,17 +282,18 @@ local function checkLoss(self)
 end
 
 function PlayState:update(dt)
-    handlePause(self)
+    self:handlePause()
     if self.isPaused then
         return
     end
     Timer.update(dt, self.timerGroup)
-    swapTiles(self)
-    checkWin(self)
-    checkLoss(self)
+    self.board:update(dt)
+    self:swapTiles()
+    self:checkWin()
+    self:checkLoss()
 end
 
-local function renderUI(self)
+function PlayState:renderUI()
     love.graphics.setColor(0.95, 0.88, 0.70, 0.88)
     DrawRect(self.uiRect)
     love.graphics.push()
@@ -307,7 +320,7 @@ local function renderUI(self)
     love.graphics.pop()
 end
 
-local function renderPauseMenu(self)
+function PlayState:renderPauseMenu()
     love.graphics.setColor({ 0.08, 0.22, 0.19, 0.65 })
     DrawRect(self.pauseMenuShadow)
     love.graphics.setColor(0.94, 0.88, 0.72, 0.96)
@@ -358,9 +371,9 @@ end
 function PlayState:render()
     self.board:render()
     self.pauseButton:render()
-    renderUI(self)
+    self:renderUI()
     if self.isPaused then
-        renderPauseMenu(self)
+        self:renderPauseMenu()
     end
     if self.isReshuffling then
         love.graphics.setFont(Fonts["large"])

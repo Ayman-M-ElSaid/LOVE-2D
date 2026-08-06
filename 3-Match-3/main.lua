@@ -48,7 +48,11 @@ function love.load()
         )
     end
     BackgroundScale = VIRTUAL_WIDTH / Textures["background"]:getWidth()
-    Frames = { ["fruits"] = GenerateQuads(Textures["fruits"], 0, 0, 128, 128) }
+    Frames = {
+        ["fruits"] = GenerateQuads(Textures["fruits"], 0, 0, 128, 128),
+        ["super-fruits"] = GenerateQuads(Textures["super-fruits"], 0, 0, 128, 128),
+        ["particles"] = GenerateQuads(Textures["particles"], 0, 0, 64, 64),
+    }
 
     GameState = StateMachine({
         ["start"] = function()
