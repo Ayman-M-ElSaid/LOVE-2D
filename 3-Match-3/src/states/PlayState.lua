@@ -97,6 +97,10 @@ function PlayState:enter(params)
 end
 
 function PlayState:swapTiles()
+    if self.isTweening then
+        return
+    end
+
     local mouseX, mouseY = Push.toGame(love.mouse.getPosition())
     if not mouseX or not mouseY then
         return
@@ -121,35 +125,66 @@ function PlayState:swapTiles()
     end
 
     if self.dragging and love.mouse.wasReleased(1) then
+        self.dragging = false
         local dx = mouseX - self.dragStartX
         local dy = mouseY - self.dragStartY
         local row, col = self.dragRow, self.dragCol
-        local targetRow, targetCol = row, col
+        local threshold = self.board.tileSize * 0.25
 
-        if math.abs(dx) > math.abs(dy) then
-            targetCol = col + math.sign(dx)
+        if math.abs(dx) < threshold and math.abs(dy) < threshold then
+            self:handleTap(row, col)
         else
-            targetRow = row + math.sign(dy)
-        end
+            self.selectedRow, self.selectedCol = nil, nil
 
-        if
-            targetRow >= 1
-            and targetRow <= self.board.rows
-            and targetCol >= 1
-            and targetCol <= self.board.cols
-        then
-            self:trySwap(row, col, targetRow, targetCol)
-        end
+            local targetRow, targetCol = row, col
+            if math.abs(dx) > math.abs(dy) then
+                targetCol = col + math.sign(dx)
+            else
+                targetRow = row + math.sign(dy)
+            end
 
-        self.dragging = false
+            if
+                targetRow >= 1
+                and targetRow <= self.board.rows
+                and targetCol >= 1
+                and targetCol <= self.board.cols
+            then
+                self:trySwap(row, col, targetRow, targetCol)
+            end
+        end
+    end
+end
+
+function PlayState:handleTap(row, col)
+    if not self.selectedRow then
+        self.selectedRow, self.selectedCol = row, col
+        return
+    end
+
+    if self.selectedRow == row and self.selectedCol == col then
+        self.selectedRow, self.selectedCol = nil, nil
+        return
+    end
+
+    local rowDiff = math.abs(self.selectedRow - row)
+    local colDiff = math.abs(self.selectedCol - col)
+
+    if rowDiff + colDiff == 1 then
+        self:trySwap(self.selectedRow, self.selectedCol, row, col)
+        self.selectedRow, self.selectedCol = nil, nil
+    else
+        self.selectedRow, self.selectedCol = row, col
     end
 end
 
 function PlayState:trySwap(row1, col1, row2, col2)
-    self.isTweening = true
     local board = self.board
     local tile1 = board.tiles[row1][col1]
     local tile2 = board.tiles[row2][col2]
+    if tile1 == tile2 then
+        return
+    end
+    self.isTweening = true
 
     board.tiles[row1][col1] = tile2
     board.tiles[row2][col2] = tile1
@@ -372,6 +407,13 @@ function PlayState:render()
     self.board:render()
     self.pauseButton:render()
     self:renderUI()
+
+    if self.selectedRow then
+        local tile = self.board.tiles[self.selectedRow][self.selectedCol]
+        love.graphics.setColor(0.52, 0.94, 1, 0.75)
+        love.graphics.rectangle("line", tile.x, tile.y, tile.width, tile.height,4)
+        love.graphics.setColor(1, 1, 1, 1)
+    end
     if self.isPaused then
         self:renderPauseMenu()
     end

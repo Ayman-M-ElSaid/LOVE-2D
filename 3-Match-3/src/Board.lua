@@ -57,19 +57,21 @@ function Board:initializeTiles()
     end
 end
 
+--- Initializes the particle system used for board effects.
 function Board:initializeParticleSystem()
-    self.particles = love.graphics.newParticleSystem(Textures["particles"])
-    self.particles:setQuads(Frames["particles"])
-    self.particles:setEmissionRate(0)
-    self.particles:setParticleLifetime(0.35, 0.60)
-    self.particles:setDirection(-math.pi / 2)
-    self.particles:setSpread(math.pi)
-    self.particles:setSpeed(150, 280)
-    self.particles:setLinearAcceleration(0, 250, 0, 450)
-    self.particles:setTangentialAcceleration(-60, 60)
-    self.particles:setSpin(-8, 8)
-    self.particles:setRotation(0, math.pi * 2)
-    self.particles:setSizes(0.35, 0.25, 0.125, 0)
+    self.particleSystem = love.graphics.newParticleSystem(Textures["particles"])
+    self.particleSystem:setQuads(Frames["particles"])
+    self.particleSystem:setEmissionRate(0)
+    self.particleSystem:setParticleLifetime(0.35, 0.60)
+    self.particleSystem:setDirection(-math.pi / 2)
+    self.particleSystem:setSpread(math.pi)
+    self.particleSystem:setSpeed(150, 280)
+    self.particleSystem:setLinearAcceleration(0, 250, 0, 450)
+    self.particleSystem:setTangentialAcceleration(-60, 60)
+    self.particleSystem:setSpin(-8, 8)
+    self.particleSystem:setRotation(0, math.pi * 2)
+    self.particleSystem:setSizes(0.35, 0.25, 0.125, 0)
+    self.activeParticles = {}
 end
 
 --- Checks each row for horizontal matches of three or more fruits.
@@ -310,10 +312,10 @@ function Board:checkSpecialMatches(tile1, tile2)
         (power1 >= 17 and power1 <= 24 and power2 >= 1 and power2 <= 16)
         or (power1 >= 1 and power1 <= 16 and power2 >= 17 and power2 <= 24)
     then
-        local startRow = math.max(1, tile2.gridY - 1)
-        local endRow = math.min(self.rows, tile2.gridY + 1)
-        local startCol = math.max(1, tile2.gridX - 1)
-        local endCol = math.min(self.cols, tile2.gridX + 1)
+        local startRow = math.max(1, tile1.gridY - 1)
+        local endRow = math.min(self.rows, tile1.gridY + 1)
+        local startCol = math.max(1, tile1.gridX - 1)
+        local endCol = math.min(self.cols, tile1.gridX + 1)
 
         for row = startRow, endRow do
             for col = 1, self.cols do
@@ -327,22 +329,23 @@ function Board:checkSpecialMatches(tile1, tile2)
         end
     elseif power1 >= 1 and power1 <= 16 and power2 >= 1 and power2 <= 16 then
         for col = 1, self.cols do
-            table.insert(matches.tiles, self.tiles[tile2.gridY][col])
+            table.insert(matches.tiles, self.tiles[tile1.gridY][col])
         end
         for row = 1, self.rows do
-            table.insert(matches.tiles, self.tiles[row][tile2.gridX])
+            table.insert(matches.tiles, self.tiles[row][tile1.gridX])
         end
     elseif power1 >= 17 and power1 <= 24 and power2 >= 17 and power2 <= 24 then
         local startRow, endRow =
-            math.max(1, tile2.gridY - 2), math.min(self.rows, tile2.gridY + 2)
+            math.max(1, tile1.gridY - 2), math.min(self.rows, tile1.gridY + 2)
         local startCol, endCol =
-            math.max(1, tile2.gridX - 2), math.min(self.cols, tile2.gridX + 2)
+            math.max(1, tile1.gridX - 2), math.min(self.cols, tile1.gridX + 2)
         for row = startRow, endRow do
             for col = startCol, endCol do
                 table.insert(matches.tiles, self.tiles[row][col])
             end
         end
     end
+    matches.comboOrigins = { [tile1] = true, [tile2] = true }
 
     self.matches = { matches }
     return #matches.tiles > 0
@@ -361,12 +364,13 @@ function Board:removeMatches()
                 FruitColors[tile.color].r,
                 FruitColors[tile.color].g,
                 FruitColors[tile.color].b
-            self.particles:setColors(r, g, b, 1, r, g, b, 0.8, r, g, b, 0)
-            self.particles:setPosition(
-                tile.x + tile.width / 2,
-                tile.y + tile.height / 2
-            )
-            self.particles:emit(10)
+
+            local particles = self.particleSystem:clone()
+            particles:setColors(r, g, b, 1, r, g, b, 0.8, r, g, b, 0)
+            particles:setPosition(tile.x + tile.width / 2, tile.y + tile.height / 2)
+            particles:emit(10)
+            table.insert(self.activeParticles, particles)
+
             self.tiles[tile.gridY][tile.gridX] = nil
             removedCount = removedCount + 1
         end
@@ -374,8 +378,43 @@ function Board:removeMatches()
 
     for _, match in ipairs(self.matches) do
         for _, tile in ipairs(match.tiles) do
-            if getmetatable(tile) == SuperFruit then
-                if tile.powerID > 16 and tile.powerID ~= 25 then -- clear a 3×3 area
+            if
+                getmetatable(tile) == SuperFruit
+                and not (match.comboOrigins and match.comboOrigins[tile])
+            then
+                if tile.powerID == 25 then -- borrow a neighbor's color and activate it
+                    local adjacents = { { 0, -1 }, { 0, 1 }, { -1, 0 }, { 1, 0 } }
+                    local neighbors = {}
+                    -- check for neighboring fruits
+                    for _, adjacent in ipairs(adjacents) do
+                        local nearbyCol, nearbyRow =
+                            tile.gridX + adjacent[1], tile.gridY + adjacent[2]
+                        if
+                            nearbyRow >= 1
+                            and nearbyRow <= self.rows
+                            and nearbyCol >= 1
+                            and nearbyCol <= self.cols
+                        then
+                            local neighbor = self.tiles[nearbyRow][nearbyCol]
+                            if neighbor and not removed[neighbor] then
+                                table.insert(neighbors, neighbor)
+                            end
+                        end
+                    end
+                    -- choose one random neighboring fruit and activate the Rainbow Bomb
+                    if #neighbors > 0 then
+                        local targetColor =
+                            neighbors[love.math.random(#neighbors)].color
+                        for row = 1, self.rows do
+                            for col = 1, self.cols do
+                                tile = self.tiles[row][col]
+                                if tile.color == targetColor then
+                                    removeTile(tile)
+                                end
+                            end
+                        end
+                    end
+                elseif tile.powerID > 16 then -- clear a 3×3 area
                     local startRow, endRow =
                         math.max(1, tile.gridY - 1), math.min(self.rows, tile.gridY + 1)
                     local startCol, endCol =
@@ -555,15 +594,22 @@ function Board:reshuffle()
     end
     return tweens
 end
-
+--- Update the active particles on the board
 function Board:update(dt)
-    self.particles:update(dt)
+    for i = #self.activeParticles, 1, -1 do
+        local particles = self.activeParticles[i]
+        particles:update(dt)
+        if particles:getCount() == 0 then
+            table.remove(self.activeParticles, i)
+        end
+    end
 end
 
 --- Renders the board background and all fruit tiles.
 function Board:render()
-    love.graphics.draw(self.particles)
-
+    for _, particles in ipairs(self.activeParticles) do
+        love.graphics.draw(particles)
+    end
     love.graphics.setColor(0.3, 0.3, 0.3, 0.8)
     for row = 1, self.rows do
         for col = 1, self.cols do
