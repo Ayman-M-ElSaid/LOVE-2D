@@ -2,6 +2,8 @@ Push = require("libs.push")
 Class = require("libs.class")
 Timer = require("libs.knife-timer")
 
+Save = require("src.Save")
+Layout = require("src.Layout")
 Button = require("src.Button")
 Board = require("src.Board")
 Fruit = require("src.Fruit")

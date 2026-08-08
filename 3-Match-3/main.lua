@@ -1,12 +1,11 @@
 require("src.dependencies")
 
-VIRTUAL_WIDTH = 512
-VIRTUAL_HEIGHT = 288
+VIRTUAL_WIDTH, VIRTUAL_HEIGHT = Layout.getDimensions()
 
 function love.load()
-    love.graphics.setDefaultFilter("linear", "linear")
+    love.filesystem.setIdentity("Tropical Match")
     love.window.setTitle("Tropical Match")
-
+    love.graphics.setDefaultFilter("linear", "linear")
     love.window.setMode(0, 0, {
         fullscreen = true,
         resizable = false,
@@ -14,21 +13,24 @@ function love.load()
     })
     WINDOW_WIDTH, WINDOW_HEIGHT = love.graphics.getDimensions()
     Push.setupScreen(VIRTUAL_WIDTH, VIRTUAL_HEIGHT, { upscale = "normal" })
-
+    Progress = Save.load()
     FONT_SCALE = math.min(WINDOW_WIDTH / VIRTUAL_WIDTH, WINDOW_HEIGHT / VIRTUAL_HEIGHT)
     Fonts = {
         ["title"] = love.graphics.newFont("assets/fonts/Baloo.ttf", 35 * FONT_SCALE),
         ["button"] = love.graphics.newFont("assets/fonts/Fredoka.ttf", 22 * FONT_SCALE),
-        ["meduim"] = love.graphics.newFont(
-            "assets/fonts/Butterpop.otf",
-            16 * FONT_SCALE
-        ),
         ["large"] = love.graphics.newFont(
             "assets/fonts/Butterpop.otf",
             24 * FONT_SCALE
         ),
+        ["meduim"] = love.graphics.newFont(
+            "assets/fonts/Butterpop.otf",
+            16 * FONT_SCALE
+        ),
+        ["small"] = love.graphics.newFont(
+            "assets/fonts/Butterpop.otf",
+            12 * FONT_SCALE
+        ),
     }
-
     Music, SFX = true, true
     Sounds = {}
     for _, file in ipairs(love.filesystem.getDirectoryItems("assets/sounds")) do
@@ -39,7 +41,6 @@ function love.load()
             type
         )
     end
-
     Textures = {}
     for _, file in ipairs(love.filesystem.getDirectoryItems("assets/images")) do
         local name, extension = file:match("(.+)%.(.+)")
@@ -47,13 +48,22 @@ function love.load()
             string.format("assets/images/%s.%s", name, extension)
         )
     end
-    BackgroundScale = VIRTUAL_WIDTH / Textures["background"]:getWidth()
     Frames = {
         ["fruits"] = GenerateQuads(Textures["fruits"], 0, 0, 128, 128),
         ["super-fruits"] = GenerateQuads(Textures["super-fruits"], 0, 0, 128, 128),
         ["particles"] = GenerateQuads(Textures["particles"], 0, 0, 64, 64),
     }
-
+    Cursors = {}
+    for _, file in ipairs(love.filesystem.getDirectoryItems("assets/cursors")) do
+        local name, extension = file:match("(.+)%.(.+)")
+        Cursors[name] = love.mouse.newCursor(
+            love.image.newImageData(
+                string.format("assets/cursors/%s.%s", name, extension)
+            ),
+            5,
+            5
+        )
+    end
     GameState = StateMachine({
         ["start"] = function()
             return StartState()
@@ -68,6 +78,10 @@ function love.load()
             return GameOverState()
         end,
     })
+    love.mouse.setCursor(Cursors["basic"])
+    Layout.build()
+    Background = Layout.getBackground()
+    BackgroundScale = VIRTUAL_WIDTH / Background:getWidth()
     GameState:change("start")
     Sounds["music"]:setLooping(true)
     Sounds["music"]:play()
@@ -102,14 +116,7 @@ end
 function love.draw()
     Push.start()
 
-    love.graphics.draw(
-        Textures["background"],
-        0,
-        0,
-        0,
-        BackgroundScale,
-        BackgroundScale
-    )
+    love.graphics.draw(Background, 0, 0, 0, BackgroundScale, BackgroundScale)
     GameState:render()
     Transition.render()
 

@@ -6,7 +6,7 @@ end
 
 function BeginLevelState:enter(params)
     self.level = params.level
-    self.score = params.score or 0
+    self.accumulativeScore = params.accumulativeScore or 0
     self.board = params.board
     Timer.tween(0.5, { [self] = { labelY = VIRTUAL_HEIGHT / 2 - 24 } })
         :finish(function()
@@ -15,7 +15,7 @@ function BeginLevelState:enter(params)
                     :finish(function()
                         GameState:change("play", {
                             level = self.level,
-                            score = self.score,
+                            accumulativeScore = self.accumulativeScore,
                             board = self.board,
                         })
                     end)

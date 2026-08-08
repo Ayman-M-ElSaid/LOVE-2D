@@ -3,18 +3,18 @@ GameOverState = Class({ __includes = BaseState })
 local textColors = { { 0.08, 0.20, 0.16, 0.65 }, { 1.0, 0.82, 0.39, 1.0 } }
 
 function GameOverState:init()
-    self.button = Button(
-        Textures["button"],
-        0.2,
-        VIRTUAL_WIDTH / 2,
-        0.775 * VIRTUAL_HEIGHT,
-        { 0.86, 0.32, 0.28, 1.0 },
-        "Awesome!",
-        { 1.0, 0.94, 0.75, 1.0 }
-    )
+    self.button = Layout.gameOverState.button
 end
+
 function GameOverState:enter(params)
-    self.score = params.score
+    self.accumulativeScore = params.accumulativeScore
+    if self.accumulativeScore > (Progress[0] or 0) then
+        self.isHighScore = true
+        Progress[0] = self.accumulativeScore
+        Save.write(Progress)
+    end
+    self.msg = self.isHighScore and "New High Score!"
+        or string.format("High Score: %d", Progress[0])
 end
 
 function GameOverState:update(dt)
@@ -29,16 +29,24 @@ function GameOverState:render()
         love.graphics.setFont(Fonts["title"])
         PrintfScaled(
             "GAME OVER",
-            -2 * i,
-            VIRTUAL_HEIGHT / 4 - 2 * i,
+            -2 * (i - 1),
+            Layout.gameOverState.titleY - 2 * (i - 1),
             VIRTUAL_WIDTH,
             "center"
         )
         love.graphics.setFont(Fonts["large"])
         PrintfScaled(
-            string.format("<Your Score: %d>", self.score),
-            -2 * i,
-            VIRTUAL_HEIGHT / 2 - 2 * i,
+            string.format("<Your Score: %d>", self.accumulativeScore),
+            -2 * (i - 1),
+            Layout.gameOverState.score - 2 * (i - 1),
+            VIRTUAL_WIDTH,
+            "center"
+        )
+        love.graphics.setFont(Fonts["meduim"])
+        PrintfScaled(
+            self.msg,
+            -2 * (i - 1),
+            Layout.gameOverState.highScore - 2 * (i - 1),
             VIRTUAL_WIDTH,
             "center"
         )

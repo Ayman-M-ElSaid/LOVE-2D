@@ -53,6 +53,39 @@ function DrawRect(rect)
     )
 end
 
+--- Draws a rounded progress bar with a layered background and fill effect.
+---@param centerX number The x-coordinate of the progress bar's center.
+---@param centerY number The y-coordinate of the progress bar's center.
+---@param width number The width of the progress bar.
+---@param height number The height of the progress bar.
+---@param progress number The progress value from 0 to 1.
+function DrawProgressBar(centerX, centerY, width, height, progress)
+    progress = math.max(0, math.min(progress, 1))
+    local x = centerX - width / 2
+    local y = centerY - height / 2
+    local radius = height / 2
+    local fillWidth = width * progress
+
+    love.graphics.setColor(0.55, 0.54, 0.40, 0.45)
+    love.graphics.rectangle("fill", x, y + 2, width, height, radius)
+
+    love.graphics.setColor(0.76, 0.74, 0.58, 0.95)
+    love.graphics.rectangle("fill", x, y, width, height, radius)
+
+    love.graphics.setColor(0.62, 0.62, 0.48, 0.75)
+    love.graphics.rectangle("fill", x + 2, y + 2, width - 4, height - 4, radius - 2)
+
+    if fillWidth <= 0 then
+        return
+    end
+
+    love.graphics.setColor(0.52, 1, 1, 1)
+    love.graphics.rectangle("fill", x, y + 2, fillWidth, height - 2, radius)
+
+    love.graphics.setColor(0.52, 0.94, 1, 0.75)
+    love.graphics.rectangle("fill", x, y, fillWidth, height - 2, radius)
+end
+
 --- Returns the sign of a number.
 ---@param x number The number to determine the sign of.
 ---@return -1|0|1 The sign of x.

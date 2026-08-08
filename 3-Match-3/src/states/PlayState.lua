@@ -5,78 +5,16 @@ function PlayState:init()
     self.hasEnded = false
     self.isTweening = false
     self.isReshuffling = false
-    self.uiRect = {
-        mode = "fill",
-        x = 0.025 * VIRTUAL_WIDTH,
-        y = 0.15 * VIRTUAL_HEIGHT,
-        width = 0.4 * VIRTUAL_WIDTH,
-        height = 0.35 * VIRTUAL_HEIGHT,
-        rx = 4,
-    }
-    self.pauseButton = Button(
-        Textures["button"],
-        0.2,
-        0.225 * VIRTUAL_WIDTH,
-        0.85 * VIRTUAL_HEIGHT,
-        { 0.93, 0.72, 0.28, 1.0 },
-        "Pause",
-        { 0.10, 0.25, 0.22, 1.0 }
-    )
-    self.pauseMenuRect = {
-        mode = "fill",
-        x = 0.325 * VIRTUAL_WIDTH,
-        y = 0.15 * VIRTUAL_HEIGHT,
-        width = 0.35 * VIRTUAL_WIDTH,
-        height = VIRTUAL_HEIGHT / 1.5,
-        rx = 4,
-    }
-    self.pauseMenuShadow = {
-        mode = "fill",
-        x = 0.325 * VIRTUAL_WIDTH - 2,
-        y = 0.15 * VIRTUAL_HEIGHT - 2,
-        width = 0.35 * VIRTUAL_WIDTH + 4,
-        height = VIRTUAL_HEIGHT / 1.5 + 4,
-        rx = 4,
-    }
-    self.musicButton = Button(
-        Textures["music"],
-        0.09,
-        self.pauseMenuRect.x + 0.4 * self.pauseMenuRect.width,
-        self.pauseMenuRect.y * 2
-    )
-    self.sfxButton = Button(
-        Textures["sfx"],
-        0.09,
-        self.pauseMenuRect.x + 0.6 * self.pauseMenuRect.width,
-        self.pauseMenuRect.y * 2
-    )
-    self.resumeButton = Button(
-        Textures["button"],
-        0.2,
-        self.pauseMenuRect.x + self.pauseMenuRect.width / 2,
-        self.pauseMenuRect.y * 2.75,
-        { 0.30, 0.72, 0.45, 1.0 },
-        "Resume",
-        { 0.06, 0.22, 0.16, 1.0 }
-    )
-    self.restartButton = Button(
-        Textures["button"],
-        0.2,
-        self.pauseMenuRect.x + self.pauseMenuRect.width / 2,
-        self.pauseMenuRect.y * 3.75,
-        { 0.95, 0.68, 0.22, 1.0 },
-        "Restart",
-        { 0.10, 0.23, 0.20, 1.0 }
-    )
-    self.quitButton = Button(
-        Textures["button"],
-        0.2,
-        self.pauseMenuRect.x + self.pauseMenuRect.width / 2,
-        self.pauseMenuRect.y * 4.75,
-        { 0.85, 0.27, 0.23, 1.0 },
-        "Quit",
-        { 1.00, 0.94, 0.78, 1.0 }
-    )
+
+    self.uiRect = Layout.playState.uiRect
+    self.pauseButton = Layout.playState.pauseButton
+    self.pauseMenuRect = Layout.playState.pauseMenuRect
+    self.pauseMenuShadow = Layout.playState.pauseMenuShadow
+    self.musicButton = Layout.playState.musicButton
+    self.sfxButton = Layout.playState.sfxButton
+    self.resumeButton = Layout.playState.resumeButton
+    self.restartButton = Layout.playState.restartButton
+    self.quitButton = Layout.playState.quitButton
 
     self.timerGroup = {}
     Timer.every(1, function()
@@ -89,10 +27,10 @@ end
 
 function PlayState:enter(params)
     self.level = params.level
-    self.board = params.board
-        or Board(9, 9, 0.09, 0.7 * VIRTUAL_WIDTH, VIRTUAL_HEIGHT / 2)
-    self.score = params.score or 0
-    self.scoreGoal = math.ceil(1.6 ^ (self.level - 1)) * 500
+    self.board = params.board or Layout.playState.board()
+    self.score = 0
+    self.goal = math.ceil(1.5 ^ (self.level - 1)) * 500
+    self.accumulativeScore = params.accumulativeScore or 0
     self.timer = math.floor(60 * 0.95 ^ (self.level - 1))
 end
 
@@ -124,8 +62,18 @@ function PlayState:swapTiles()
         end
     end
 
+    if self.dragging and not love.mouse.wasReleased(1) then
+        local dx = mouseX - self.dragStartX
+        local dy = mouseY - self.dragStartY
+        local threshold = self.board.tileSize * 0.1
+        if math.abs(dx) >= threshold or math.abs(dy) >= threshold then
+            love.mouse.setCursor(Cursors["grab"])
+        end
+    end
+
     if self.dragging and love.mouse.wasReleased(1) then
         self.dragging = false
+        love.mouse.setCursor(Cursors["basic"])
         local dx = mouseX - self.dragStartX
         local dy = mouseY - self.dragStartY
         local row, col = self.dragRow, self.dragCol
@@ -231,6 +179,7 @@ function PlayState:checkMatches()
 
     local removedTiles = self.board:removeMatches()
     self.score = self.score + removedTiles * 25
+    self.accumulativeScore = self.accumulativeScore + removedTiles * 25
     self.timer = math.min(60, self.timer + removedTiles)
 
     local tilesToFall = self.board:getFallingTiles()
@@ -263,9 +212,6 @@ function PlayState:reshuffleBoard()
 end
 
 function PlayState:handlePause()
-    if self.pauseButton:isClicked() then
-        self.isPaused = true
-    end
     if self.isPaused then
         if self.resumeButton:isClicked() then
             self.isPaused = false
@@ -283,6 +229,8 @@ function PlayState:handlePause()
                 Sounds["music"]:stop()
             end
         end
+    elseif self.pauseButton:isClicked() then
+        self.isPaused = true
     end
 end
 
@@ -290,14 +238,14 @@ function PlayState:checkWin()
     if self.hasEnded or self.isTweening then
         return
     end
-    if self.score >= self.scoreGoal then
+    if self.score >= self.goal then
         self.hasEnded = true
         if SFX then
             Sounds["next-level"]:play()
         end
         Transition.to("begin-level", {
             level = self.level + 1,
-            score = self.score,
+            accumulativeScore = self.accumulativeScore,
             board = self.board,
         })
     end
@@ -312,7 +260,7 @@ function PlayState:checkLoss()
         if SFX then
             Sounds["game-over"]:play()
         end
-        Transition.to("game-over", { score = self.score })
+        Transition.to("game-over", { accumulativeScore = self.accumulativeScore })
     end
 end
 
@@ -337,9 +285,8 @@ function PlayState:renderUI()
     love.graphics.setFont(Fonts["meduim"])
     local lines = {
         "Level: " .. tostring(self.level),
-        "Score: " .. tostring(self.score),
-        "Goal : " .. tostring(self.scoreGoal),
         "Time : " .. tostring(self.timer),
+        "Score: " .. tostring(self.score),
     }
     local lineHeight = Fonts["meduim"]:getHeight() / FONT_SCALE
     for i, line in ipairs(lines) do
@@ -353,9 +300,21 @@ function PlayState:renderUI()
     end
     love.graphics.setColor(1, 1, 1, 1)
     love.graphics.pop()
+
+    DrawProgressBar(
+        self.uiRect.x + self.uiRect.width / 2,
+        self.uiRect.y + 0.815 * self.uiRect.height,
+        self.uiRect.width * 0.8,
+        self.uiRect.height * 0.185,
+        self.score / self.goal
+    )
+    love.graphics.setColor(1, 1, 1, 1)
 end
 
 function PlayState:renderPauseMenu()
+    love.graphics.setColor(1, 1, 1, 0.7)
+    love.graphics.rectangle("fill", 0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT)
+
     love.graphics.setColor({ 0.08, 0.22, 0.19, 0.65 })
     DrawRect(self.pauseMenuShadow)
     love.graphics.setColor(0.94, 0.88, 0.72, 0.96)
@@ -411,7 +370,7 @@ function PlayState:render()
     if self.selectedRow then
         local tile = self.board.tiles[self.selectedRow][self.selectedCol]
         love.graphics.setColor(0.52, 0.94, 1, 0.75)
-        love.graphics.rectangle("line", tile.x, tile.y, tile.width, tile.height,4)
+        love.graphics.rectangle("line", tile.x, tile.y, tile.width, tile.height, 4)
         love.graphics.setColor(1, 1, 1, 1)
     end
     if self.isPaused then
