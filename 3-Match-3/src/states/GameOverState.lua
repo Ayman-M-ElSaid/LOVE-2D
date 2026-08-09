@@ -24,12 +24,16 @@ function GameOverState:update(dt)
 end
 
 function GameOverState:render()
+    if IS_MOBILE then
+        love.graphics.setColor(0.87, 0.72, 0.49, 0.5)
+        love.graphics.rectangle("fill", 30, Layout.gameOverState.titleY + 10, 300, 50, 25)
+    end
     for i, color in ipairs(textColors) do
         love.graphics.setColor(color)
         love.graphics.setFont(Fonts["title"])
         PrintfScaled(
             "GAME OVER",
-            -2 * (i - 1),
+            2 * (i - 1),
             Layout.gameOverState.titleY - 2 * (i - 1),
             VIRTUAL_WIDTH,
             "center"

@@ -25,6 +25,10 @@ function StartState:update(dt)
 end
 
 function StartState:render()
+    if IS_MOBILE then
+        love.graphics.setColor(0.87, 0.72, 0.49, 0.5)
+        love.graphics.rectangle("fill", 15, Layout.startState.titleY + 10, 330, 50, 25)
+    end
     love.graphics.setFont(Fonts["title"])
     -- draw shadow
     love.graphics.setColor(0.08, 0.20, 0.16, 0.65)

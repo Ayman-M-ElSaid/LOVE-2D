@@ -289,14 +289,19 @@ function PlayState:renderUI()
         "Score: " .. tostring(self.score),
     }
     local lineHeight = Fonts["meduim"]:getHeight() / FONT_SCALE
-    for i, line in ipairs(lines) do
-        PrintfScaled(
-            line,
-            0,
-            5 + (i - 1) * (lineHeight + 5),
-            self.uiRect.width,
-            "center"
-        )
+    if IS_MOBILE then
+        PrintfScaled(lines[1] .. "\t" .. lines[2], 0, 5, self.uiRect.width, "center")
+        PrintfScaled(lines[3], 0, 5 + lineHeight, self.uiRect.width, "center")
+    else
+        for i, line in ipairs(lines) do
+            PrintfScaled(
+                line,
+                0,
+                5 + (i - 1) * (lineHeight + 5),
+                self.uiRect.width,
+                "center"
+            )
+        end
     end
     love.graphics.setColor(1, 1, 1, 1)
     love.graphics.pop()

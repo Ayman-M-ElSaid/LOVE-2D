@@ -1,36 +1,20 @@
 require("src.dependencies")
 
+IS_MOBILE = love.system.getOS() == "Android" or love.system.getOS() == "iOS"
 VIRTUAL_WIDTH, VIRTUAL_HEIGHT = Layout.getDimensions()
 
 function love.load()
     love.filesystem.setIdentity("Tropical Match")
     love.window.setTitle("Tropical Match")
     love.graphics.setDefaultFilter("linear", "linear")
-    love.window.setMode(0, 0, {
+    love.window.setMode(1080, 2400, {
         fullscreen = true,
         resizable = false,
         vsync = true,
     })
-    WINDOW_WIDTH, WINDOW_HEIGHT = love.graphics.getDimensions()
     Push.setupScreen(VIRTUAL_WIDTH, VIRTUAL_HEIGHT, { upscale = "normal" })
     Progress = Save.load()
-    FONT_SCALE = math.min(WINDOW_WIDTH / VIRTUAL_WIDTH, WINDOW_HEIGHT / VIRTUAL_HEIGHT)
-    Fonts = {
-        ["title"] = love.graphics.newFont("assets/fonts/Baloo.ttf", 35 * FONT_SCALE),
-        ["button"] = love.graphics.newFont("assets/fonts/Fredoka.ttf", 22 * FONT_SCALE),
-        ["large"] = love.graphics.newFont(
-            "assets/fonts/Butterpop.otf",
-            24 * FONT_SCALE
-        ),
-        ["meduim"] = love.graphics.newFont(
-            "assets/fonts/Butterpop.otf",
-            16 * FONT_SCALE
-        ),
-        ["small"] = love.graphics.newFont(
-            "assets/fonts/Butterpop.otf",
-            12 * FONT_SCALE
-        ),
-    }
+
     Music, SFX = true, true
     Sounds = {}
     for _, file in ipairs(love.filesystem.getDirectoryItems("assets/sounds")) do
@@ -64,6 +48,7 @@ function love.load()
             5
         )
     end
+    Layout.loadFonts(love.graphics.getDimensions())
     GameState = StateMachine({
         ["start"] = function()
             return StartState()
@@ -88,6 +73,11 @@ function love.load()
 
     love.mouse.buttonsPressed = {}
     love.mouse.buttonsReleased = {}
+end
+
+function love.resize(w, h)
+    Push.resize(w, h)
+    Layout.loadFonts(love.graphics.getDimensions())
 end
 
 function love.mousepressed(x, y, button)
