@@ -1,0 +1,97 @@
+Slime = Class({})
+
+local DIRECTIONS = { DOWN = 1, UP = 2, LEFT = 3, RIGHT = 4 }
+local SPEED = 300
+
+function Slime:init(x, y, color)
+    self.x = x
+    self.y = y
+    self.width = 40
+    self.height = 40
+    self.dx = 0
+    self.dy = 0
+    self.isMoving = false
+    self.color = color
+    self.direction = DIRECTIONS.DOWN
+    self.frame = 1
+    Timer.every(0.15, function()
+        self.frame = self.frame % 8 + 1
+    end)
+end
+
+function Slime:checkInput()
+    if self.isMoving then
+        return
+    end
+
+    if love.keyboard.wasPressed("right") then
+        self.dx = SPEED
+        self.direction = DIRECTIONS.RIGHT
+    elseif love.keyboard.wasPressed("left") then
+        self.dx = -SPEED
+        self.direction = DIRECTIONS.LEFT
+    elseif love.keyboard.wasPressed("up") then
+        self.dy = -SPEED
+        self.direction = DIRECTIONS.UP
+    elseif love.keyboard.wasPressed("down") then
+        self.dy = SPEED
+        self.direction = DIRECTIONS.DOWN
+    else
+        self.dx = 0
+        self.dy = 0
+    end
+
+    if math.abs(self.dx) > 0 or math.abs(self.dy) > 0 then
+        self.isMoving = true
+    end
+end
+
+function Slime:checkCollision(tiles)
+    for _, row in ipairs(tiles) do
+        for _, tile in ipairs(row) do
+            if
+                self.x < tile.x + tile.width
+                and self.x + self.width > tile.x
+                and self.y < tile.y + tile.height
+                and self.y + self.height > tile.y
+            then
+                if tile.isSolid then
+                    if self.dx > 0 then
+                        self.x = tile.x - self.width
+                    elseif self.dx < 0 then
+                        self.x = tile.x + tile.width
+                    elseif self.dy > 0 then
+                        self.y = tile.y - self.height
+                    elseif self.dy < 0 then
+                        self.y = tile.y + tile.height
+                    end
+
+                    self.dx = 0
+                    self.dy = 0
+                    self.isMoving = false
+                    return
+                elseif not tile.isPainted then
+                    tile.isPainted = true
+                    return
+                end
+            end
+        end
+    end
+end
+
+function Slime:update(dt, tiles)
+    self.x = self.x + self.dx * dt
+    self.y = self.y + self.dy * dt
+    self:checkCollision(tiles)
+    self:checkInput()
+    Timer.update(dt)
+end
+
+function Slime:render()
+    love.graphics.setColor(self.color)
+    local frame = self.frame + (self.direction - 1) * 8 + (self.isMoving and 32 or 0)
+    love.graphics.draw(Textures["slime"], Frames["slime"][frame], self.x, self.y)
+    love.graphics.setColor(1, 1, 1, 1)
+end
+
+return Slime
