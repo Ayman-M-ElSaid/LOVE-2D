@@ -18,3 +18,22 @@ function GenerateQuads(sheet, x1, y1, w, h)
 
     return quads
 end
+
+--- Prints scaled fonts without blurring.
+--- @param text string The text to be printed
+--- @param x number The position on the x-axis.
+--- @param y number The position on the y-axis
+--- @param limit number The maximum line width in horizontal pixels.
+--- @param align "left"|"right"|"center"|"justify" The text alignment
+function PrintfScaled(text, x, y, limit, align)
+    love.graphics.printf(
+        text,
+        x,
+        y,
+        limit * FONT_SCALE,
+        align,
+        0,
+        1 / FONT_SCALE,
+        1 / FONT_SCALE
+    )
+end
