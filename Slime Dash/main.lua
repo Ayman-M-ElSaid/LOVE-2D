@@ -5,7 +5,9 @@ VIRTUAL_WIDTH, VIRTUAL_HEIGHT = 360, 800
 local function loadFonts(w, h)
     FONT_SCALE = math.min(w / VIRTUAL_WIDTH, h / VIRTUAL_HEIGHT)
     Fonts = {
+        ["title"] = love.graphics.newFont("assets/fonts/Fredoka.ttf", 60 * FONT_SCALE),
         ["large"] = love.graphics.newFont("assets/fonts/Copyduck.otf", 40 * FONT_SCALE),
+        ["button"] = love.graphics.newFont("assets/fonts/Fredoka.ttf", 40 * FONT_SCALE),
     }
 end
 
@@ -29,6 +31,7 @@ function love.load()
     end
     Frames = {
         ["slime"] = GenerateQuads(Textures["slime"], 0, 0, 40, 40),
+        ["logo"] = GenerateQuads(Textures["logo"], 0, 0, 200, 200),
     }
     Sounds = {}
     for _, file in ipairs(love.filesystem.getDirectoryItems("assets/sounds")) do
@@ -40,17 +43,23 @@ function love.load()
         )
     end
     GameState = StateMachine({
+        ["start"] = function()
+            return StartState()
+        end,
         ["play"] = function()
             return PlayState()
         end,
     })
     love.graphics.setBackgroundColor(0.96, 0.96, 0.86, 1)
     loadFonts(love.graphics.getDimensions())
+    Music = true
     Sounds["music"]:setLooping(true)
     Sounds["music"]:play()
-    GameState:change("play", { level = 1 })
+    GameState:change("start")
 
     love.keyboard.keysPressed = {}
+    love.touch.pressed = {}
+    love.touch.released = {}
 end
 
 function love.resize(w, h)
@@ -69,9 +78,21 @@ function love.keyboard.wasPressed(key)
     return love.keyboard.keysPressed[key]
 end
 
+function love.touchpressed(id, x, y)
+    x, y = Push.toGame(x, y)
+    table.insert(love.touch.pressed, { id = id, x = x, y = y })
+end
+
+function love.touchreleased(id, x, y)
+    x, y = Push.toGame(x, y)
+    table.insert(love.touch.released, { id = id, x = x, y = y })
+end
+
 function love.update(dt)
     GameState:update(dt)
     love.keyboard.keysPressed = {}
+    love.touch.pressed = {}
+    love.touch.released = {}
 end
 
 function love.draw()

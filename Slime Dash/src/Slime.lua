@@ -10,6 +10,7 @@ function Slime:init(x, y, color)
     self.height = 30
     self.dx = 0
     self.dy = 0
+    self.activeTouch = {}
     self.isMoving = false
     self.color = color
     self.direction = DIRECTIONS.DOWN
@@ -24,16 +25,29 @@ function Slime:checkInput()
         return
     end
 
-    if love.keyboard.wasPressed("right") then
+    for _, touch in ipairs(love.touch.pressed) do
+        self.activeTouch[touch.id] = { startX = touch.x, startY = touch.y }
+    end
+    local dx, dy = 0, 0
+    local SWIPE_THRESHOLD = 30
+    for _, touch in ipairs(love.touch.released) do
+        local start = self.activeTouch[touch.id]
+        if start then
+            dx = touch.x - start.startX
+            dy = touch.y - start.startY
+            self.activeTouch[touch.id] = nil
+        end
+    end
+    if love.keyboard.wasPressed("right") or dx >= SWIPE_THRESHOLD then
         self.dx = SPEED
         self.direction = DIRECTIONS.RIGHT
-    elseif love.keyboard.wasPressed("left") then
+    elseif love.keyboard.wasPressed("left") or dx <= -SWIPE_THRESHOLD then
         self.dx = -SPEED
         self.direction = DIRECTIONS.LEFT
-    elseif love.keyboard.wasPressed("up") then
+    elseif love.keyboard.wasPressed("up") or dy <= -SWIPE_THRESHOLD then
         self.dy = -SPEED
         self.direction = DIRECTIONS.UP
-    elseif love.keyboard.wasPressed("down") then
+    elseif love.keyboard.wasPressed("down") or dy >= SWIPE_THRESHOLD then
         self.dy = SPEED
         self.direction = DIRECTIONS.DOWN
     end
