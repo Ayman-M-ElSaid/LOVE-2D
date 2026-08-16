@@ -1,5 +1,7 @@
 local LevelMaker = {}
 
+local Tile = require("src.Tile")
+
 local MIN_COLS, MAX_COLS = 6, 9
 local MIN_ROWS, MAX_ROWS = 10, 22
 local MAX_ATTEMPTS = 10

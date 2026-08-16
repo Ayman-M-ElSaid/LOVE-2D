@@ -1,7 +1,9 @@
 Slime = Class({})
 
 local DIRECTIONS = { DOWN = 1, UP = 2, LEFT = 3, RIGHT = 4 }
-local SPEED = 600
+local SPEED = 750
+local SWIPE_THRESHOLD = 60
+local MAX_QUEUE = 3
 
 function Slime:init(x, y, color)
     self.x = x
@@ -11,6 +13,7 @@ function Slime:init(x, y, color)
     self.dx = 0
     self.dy = 0
     self.activeTouch = {}
+    self.moveQueue = {}
     self.isMoving = false
     self.color = color
     self.direction = DIRECTIONS.DOWN
@@ -21,41 +24,59 @@ function Slime:init(x, y, color)
 end
 
 function Slime:checkInput()
-    if self.isMoving then
-        return
+    for _, touch in ipairs(love.touch.pressed) do
+        self.activeTouch[touch.id] = { x = touch.x, y = touch.y }
     end
 
-    for _, touch in ipairs(love.touch.pressed) do
-        self.activeTouch[touch.id] = { startX = touch.x, startY = touch.y }
-    end
-    local dx, dy = 0, 0
-    local SWIPE_THRESHOLD = 30
     for _, touch in ipairs(love.touch.released) do
         local start = self.activeTouch[touch.id]
         if start then
-            dx = touch.x - start.startX
-            dy = touch.y - start.startY
+            local dx = touch.x - start.x
+            local dy = touch.y - start.y
+            local direction
+            if math.abs(dx) > math.abs(dy) then
+                if dx >= SWIPE_THRESHOLD then
+                    direction = DIRECTIONS.RIGHT
+                elseif dx <= -SWIPE_THRESHOLD then
+                    direction = DIRECTIONS.LEFT
+                end
+            else
+                if dy <= -SWIPE_THRESHOLD then
+                    direction = DIRECTIONS.UP
+                elseif dy >= SWIPE_THRESHOLD then
+                    direction = DIRECTIONS.DOWN
+                end
+            end
+            if direction then
+                if #self.moveQueue < MAX_QUEUE then
+                    table.insert(self.moveQueue, direction)
+                end
+            end
             self.activeTouch[touch.id] = nil
         end
     end
-    if love.keyboard.wasPressed("right") or dx >= SWIPE_THRESHOLD then
-        self.dx = SPEED
-        self.direction = DIRECTIONS.RIGHT
-    elseif love.keyboard.wasPressed("left") or dx <= -SWIPE_THRESHOLD then
-        self.dx = -SPEED
-        self.direction = DIRECTIONS.LEFT
-    elseif love.keyboard.wasPressed("up") or dy <= -SWIPE_THRESHOLD then
-        self.dy = -SPEED
-        self.direction = DIRECTIONS.UP
-    elseif love.keyboard.wasPressed("down") or dy >= SWIPE_THRESHOLD then
-        self.dy = SPEED
-        self.direction = DIRECTIONS.DOWN
+
+    if self.isMoving then
+        return
+    end
+    local direction = table.remove(self.moveQueue, 1)
+    if not direction then
+        return
     end
 
-    if math.abs(self.dx) > 0 or math.abs(self.dy) > 0 then
-        self.isMoving = true
-        self.animationTimer.interval = 0.15
+    self.direction = direction
+    if direction == DIRECTIONS.RIGHT then
+        self.dx = SPEED
+    elseif direction == DIRECTIONS.LEFT then
+        self.dx = -SPEED
+    elseif direction == DIRECTIONS.UP then
+        self.dy = -SPEED
+    elseif direction == DIRECTIONS.DOWN then
+        self.dy = SPEED
     end
+
+    self.isMoving = true
+    self.animationTimer.interval = 0.15
 end
 
 function Slime:checkCollision(tiles)
@@ -86,6 +107,7 @@ function Slime:checkCollision(tiles)
                     return
                 elseif not tile.isPainted then
                     tile.isPainted = true
+                    tile.particles:emit(15)
                     return
                 end
             end

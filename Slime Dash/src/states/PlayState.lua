@@ -1,14 +1,19 @@
 PlayState = Class({ __includes = BaseState })
 
+local LevelMaker = require("src.LevelMaker")
+local Slime = require("src.Slime")
+
 function PlayState:init()
     self.retryButton =
         Button(Textures["retry"], 0.45, 0.9 * VIRTUAL_WIDTH, 0.95 * VIRTUAL_HEIGHT)
+    self.backButton =
+        Button(Textures["back"], 0.45, 0.1 * VIRTUAL_WIDTH, 0.05 * VIRTUAL_HEIGHT)
     self.trialCounter = 1
 end
 
 function PlayState:enter(params)
     self.level = params.level or 1
-    local r, g, b = love.math.random(), love.math.random(), love.math.random()
+    local r, g, b = unpack(RandomColor())
     self.tiles, self.startPointx, self.startPointY =
         LevelMaker.makeLevel(self.level, { r, g, b, 0.35 })
     self.slime = Slime(self.startPointx, self.startPointY, { r, g, b, 1 })
@@ -44,9 +49,16 @@ end
 
 function PlayState:update(dt)
     self.slime:update(dt, self.tiles)
+    for _, row in ipairs(self.tiles) do
+        for _, tile in ipairs(row) do
+            tile.particles:update(dt)
+        end
+    end
     self:checkWin()
     if self.retryButton:isClicked() then
         self:reset()
+    elseif self.backButton:isClicked() or love.keyboard.wasPressed("escape") then
+        GameState:change("start")
     end
     -- for testing, to be removed
     if love.keyboard.wasPressed("space") then
@@ -64,9 +76,10 @@ function PlayState:render()
     end
     self.slime:render()
     self.retryButton:render()
+    self.backButton:render()
 
     love.graphics.setFont(Fonts["large"])
-    love.graphics.setColor(0, 0, 0, 0.5)
+    love.graphics.setColor(0.8, 0.8, 0.8, 0.8)
     PrintfScaled(
         "Level " .. tostring(self.level),
         3,

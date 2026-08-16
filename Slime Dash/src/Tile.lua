@@ -10,6 +10,19 @@ function Tile:init(x, y, color)
     self.paintColor = color
     self.isSolid = true
     self.isPainted = true
+    self:initializeParticleSystem(color)
+end
+
+function Tile:initializeParticleSystem(color)
+    self.particles = love.graphics.newParticleSystem(Textures["particle"])
+    self.particles:setColors(color)
+    self.particles:setPosition(self.x + TILE_SIZE / 2, self.y + TILE_SIZE / 2)
+    self.particles:setParticleLifetime(0.25, 0.35)
+    self.particles:setSpeed(25, 45)
+    self.particles:setSpread(math.pi * 2)
+    self.particles:setLinearDamping(6, 8)
+    self.particles:setSizes(1, 0)
+    self.particles:setSizeVariation(0.4)
 end
 
 function Tile:render()
@@ -54,6 +67,7 @@ function Tile:render()
             love.graphics.setColor(1, 1, 1, 1)
         end
     end
+    love.graphics.draw(self.particles)
 end
 
 return Tile

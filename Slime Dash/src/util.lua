@@ -37,3 +37,10 @@ function PrintfScaled(text, x, y, limit, align)
         1 / FONT_SCALE
     )
 end
+
+--- Generates a random RGBA color.
+---@param alpha number? The alpha value of the color. Defaults to 1.
+---@return number[] A table containing random red, green, blue, and alpha values.
+function RandomColor(alpha)
+    return { love.math.random(), love.math.random(), love.math.random(), alpha or 1 }
+end

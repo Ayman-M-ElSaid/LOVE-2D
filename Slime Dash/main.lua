@@ -6,8 +6,9 @@ local function loadFonts(w, h)
     FONT_SCALE = math.min(w / VIRTUAL_WIDTH, h / VIRTUAL_HEIGHT)
     Fonts = {
         ["title"] = love.graphics.newFont("assets/fonts/Fredoka.ttf", 60 * FONT_SCALE),
-        ["large"] = love.graphics.newFont("assets/fonts/Copyduck.otf", 40 * FONT_SCALE),
-        ["button"] = love.graphics.newFont("assets/fonts/Fredoka.ttf", 40 * FONT_SCALE),
+        ["large"] = love.graphics.newFont("assets/fonts/BubblegumSans.ttf",45 * FONT_SCALE),
+        ["button"] = love.graphics.newFont("assets/fonts/Fredoka.ttf", 35 * FONT_SCALE),
+        ["small"] = love.graphics.newFont("assets/fonts/Fredoka.ttf", 16 * FONT_SCALE),
     }
 end
 
@@ -52,7 +53,6 @@ function love.load()
     })
     love.graphics.setBackgroundColor(0.96, 0.96, 0.86, 1)
     loadFonts(love.graphics.getDimensions())
-    Music = true
     Sounds["music"]:setLooping(true)
     Sounds["music"]:play()
     GameState:change("start")
@@ -69,9 +69,6 @@ end
 
 function love.keypressed(key)
     love.keyboard.keysPressed[key] = true
-    if key == "escape" then
-        love.event.quit()
-    end
 end
 
 function love.keyboard.wasPressed(key)

@@ -1,5 +1,7 @@
 StartState = Class({ __includes = BaseState })
 
+local Bubble = require("src.Bubble")
+
 local function loadLevelData()
     if not love.filesystem.getInfo("level.dat") then
         love.filesystem.write("level.dat", "1")
@@ -13,41 +15,94 @@ local function loadLevelData()
 end
 
 function StartState:init()
-    self.button = Button(
+    self.startButton =
+        Button(Textures["button"], 0.5, VIRTUAL_WIDTH / 2, 0.75 * VIRTUAL_HEIGHT)
+    self.levelsButton = Button(
         Textures["button"],
-        0.45,
+        0.4,
         VIRTUAL_WIDTH / 2,
-        0.8 * VIRTUAL_HEIGHT,
-        { 0.5, 0.5, 0.5, 1 },
-        "Play"
+        0.85 * VIRTUAL_HEIGHT,
+        { 1, 1, 1, 1 },
+        "Levels",
+        { 0.12, 0.17, 0.34, 1 }
     )
+    self.level = loadLevelData()
     self.frameIndex = 1
-    Timer.every(0.2, function()
+    self.slimeColor = RandomColor()
+    Timer.every(0.25, function()
         self.frameIndex = self.frameIndex % 8 + 1
     end)
+    Timer.every(2, function()
+        self.slimeColor = RandomColor()
+    end)
+
+    self.bubbles = {}
+    for _ = 1, 18 do
+        table.insert(self.bubbles, Bubble(love.math.random(VIRTUAL_HEIGHT)))
+    end
 end
 
 function StartState:update(dt)
-    if self.button:isClicked() or love.keyboard.wasPressed("space") then
-        GameState:change("play", { level = loadLevelData() })
+    if self.startButton:isClicked() or love.keyboard.wasPressed("space") then
+        GameState:change("play", { level = self.level })
+    end
+    if love.keyboard.wasPressed("escape") then
+        love.event.quit()
+    end
+    for _, bubble in ipairs(self.bubbles) do
+        bubble:update(dt)
+    end
+    for i, bubble in ipairs(self.bubbles) do
+        if bubble.shouldRemove then
+            table.remove(self.bubbles, i)
+            table.insert(self.bubbles, Bubble())
+        end
     end
     Timer.update(dt)
 end
 
 function StartState:render()
     love.graphics.draw(Textures["background"])
+    -- draw animated slime logo
+    love.graphics.setColor(self.slimeColor)
+    love.graphics.draw(
+        Textures["logo"],
+        Frames["logo"][self.frameIndex],
+        (VIRTUAL_WIDTH - 200) / 2,
+        0.45 * (VIRTUAL_HEIGHT - 200)
+    )
+    love.graphics.setColor(1, 1, 1, 1)
+    -- draw animated bubbles
+    for _, bubble in ipairs(self.bubbles) do
+        bubble:render()
+    end
+    -- draw title with shadow
     love.graphics.setFont(Fonts["title"])
     love.graphics.setColor(1, 1, 1, 1)
     PrintfScaled("Slime Dash", 0, 0.125 * VIRTUAL_HEIGHT + 3, VIRTUAL_WIDTH, "center")
     love.graphics.setColor(0.12, 0.17, 0.34, 1)
     PrintfScaled("Slime Dash", 0, 0.125 * VIRTUAL_HEIGHT, VIRTUAL_WIDTH, "center")
-    self.button:render()
-    love.graphics.setColor(0.52, 0.94, 1, 1)
-    love.graphics.draw(
-        Textures["logo"],
-        Frames["logo"][self.frameIndex],
-        (VIRTUAL_WIDTH - 200) / 2,
-        (VIRTUAL_HEIGHT - 200) / 2.5
+    love.graphics.setFont(Fonts["small"])
+    PrintfScaled(
+        "A SLIDING PAINT PUZZLE!",
+        0,
+        0.21 * VIRTUAL_HEIGHT,
+        VIRTUAL_WIDTH,
+        "center"
     )
     love.graphics.setColor(1, 1, 1, 1)
+    -- draw buttons
+    self.startButton:render()
+    love.graphics.setColor(0.12, 0.17, 0.34, 1)
+    love.graphics.setFont(Fonts["button"])
+    PrintfScaled("Play", 0, 0.705 * VIRTUAL_HEIGHT, VIRTUAL_WIDTH, "center")
+    love.graphics.setFont(Fonts["small"])
+    PrintfScaled(
+        "Level " .. tostring(self.level),
+        0,
+        0.755 * VIRTUAL_HEIGHT,
+        VIRTUAL_WIDTH,
+        "center"
+    )
+    self.levelsButton:render()
 end
