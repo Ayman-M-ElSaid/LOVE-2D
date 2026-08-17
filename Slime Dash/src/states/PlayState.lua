@@ -12,7 +12,7 @@ function PlayState:init()
 end
 
 function PlayState:enter(params)
-    self.level = params.level or 1
+    self.level = params.level
     local r, g, b = unpack(RandomColor())
     self.tiles, self.startPointx, self.startPointY =
         LevelMaker.makeLevel(self.level, { r, g, b, 0.35 })
@@ -30,8 +30,10 @@ function PlayState:checkWin()
             end
         end
     end
-    GameState:change("play", { level = self.level + 1 })
-    love.filesystem.write("level.dat", tostring(self.level + 1))
+    GameState:change(
+        "level-complete",
+        { level = self.level, moves = self.slime.moveCount, trails = self.trialCounter }
+    )
 end
 
 function PlayState:reset()
@@ -95,4 +97,5 @@ function PlayState:render()
         VIRTUAL_WIDTH,
         "center"
     )
+    love.graphics.setColor(1, 1, 1, 1)
 end

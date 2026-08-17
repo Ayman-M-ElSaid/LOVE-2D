@@ -2,18 +2,6 @@ StartState = Class({ __includes = BaseState })
 
 local Bubble = require("src.Bubble")
 
-local function loadLevelData()
-    if not love.filesystem.getInfo("level.dat") then
-        love.filesystem.write("level.dat", "1")
-    end
-    local level
-    for line in love.filesystem.lines("level.dat") do
-        level = line:match("^(%d+)$")
-    end
-
-    return level
-end
-
 function StartState:init()
     self.startButton =
         Button(Textures["button"], 0.5, VIRTUAL_WIDTH / 2, 0.75 * VIRTUAL_HEIGHT)
@@ -26,7 +14,7 @@ function StartState:init()
         "Levels",
         { 0.12, 0.17, 0.34, 1 }
     )
-    self.level = loadLevelData()
+    self.level = #Progress
     self.frameIndex = 1
     self.slimeColor = RandomColor()
     Timer.every(0.25, function()
@@ -37,7 +25,7 @@ function StartState:init()
     end)
 
     self.bubbles = {}
-    for _ = 1, 18 do
+    for _ = 1, 20 do
         table.insert(self.bubbles, Bubble(love.math.random(VIRTUAL_HEIGHT)))
     end
 end
@@ -45,10 +33,15 @@ end
 function StartState:update(dt)
     if self.startButton:isClicked() or love.keyboard.wasPressed("space") then
         GameState:change("play", { level = self.level })
+    elseif self.levelsButton:isClicked() or love.keyboard.wasPressed("s") then
+        GameState:change("level-select", { level = self.level })
     end
+
     if love.keyboard.wasPressed("escape") then
+        Save.write(Progress)
         love.event.quit()
     end
+
     for _, bubble in ipairs(self.bubbles) do
         bubble:update(dt)
     end
@@ -68,8 +61,8 @@ function StartState:render()
     love.graphics.draw(
         Textures["logo"],
         Frames["logo"][self.frameIndex],
-        (VIRTUAL_WIDTH - 200) / 2,
-        0.45 * (VIRTUAL_HEIGHT - 200)
+        (VIRTUAL_WIDTH - 156.75) / 2,
+        0.45 * (VIRTUAL_HEIGHT - 157)
     )
     love.graphics.setColor(1, 1, 1, 1)
     -- draw animated bubbles

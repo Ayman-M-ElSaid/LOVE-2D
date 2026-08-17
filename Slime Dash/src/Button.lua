@@ -32,6 +32,7 @@ function Button:isClicked()
                 and y >= self.top
                 and y <= self.bottom
             then
+                Sounds["select"]:stop()
                 Sounds["select"]:play()
                 return true
             end

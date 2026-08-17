@@ -32,7 +32,7 @@ function love.load()
     end
     Frames = {
         ["slime"] = GenerateQuads(Textures["slime"], 0, 0, 40, 40),
-        ["logo"] = GenerateQuads(Textures["logo"], 0, 0, 200, 200),
+        ["logo"] = GenerateQuads(Textures["logo"], 0, 0, 156.75, 157),
     }
     Sounds = {}
     for _, file in ipairs(love.filesystem.getDirectoryItems("assets/sounds")) do
@@ -50,11 +50,15 @@ function love.load()
         ["play"] = function()
             return PlayState()
         end,
+        ["level-select"] = function()
+            return LevelSelectState()
+        end,
     })
     love.graphics.setBackgroundColor(0.96, 0.96, 0.86, 1)
     loadFonts(love.graphics.getDimensions())
     Sounds["music"]:setLooping(true)
     Sounds["music"]:play()
+    Progress = Save.load()
     GameState:change("start")
 
     love.keyboard.keysPressed = {}

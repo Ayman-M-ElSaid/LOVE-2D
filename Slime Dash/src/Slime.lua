@@ -15,8 +15,9 @@ function Slime:init(x, y, color)
     self.activeTouch = {}
     self.moveQueue = {}
     self.isMoving = false
-    self.color = color
+    self.moveCount = 0
     self.direction = DIRECTIONS.DOWN
+    self.color = color
     self.frame = 1
     self.animationTimer = Timer.every(0.3, function()
         self.frame = self.frame % 8 + 1
@@ -76,6 +77,7 @@ function Slime:checkInput()
     end
 
     self.isMoving = true
+    self.moveCount = self.moveCount + 1
     self.animationTimer.interval = 0.15
 end
 
