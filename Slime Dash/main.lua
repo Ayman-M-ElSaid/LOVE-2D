@@ -1,13 +1,14 @@
-require("src.dependencies")
-
 VIRTUAL_WIDTH, VIRTUAL_HEIGHT = 360, 800
+
+require("src.dependencies")
 
 local function loadFonts(w, h)
     FONT_SCALE = math.min(w / VIRTUAL_WIDTH, h / VIRTUAL_HEIGHT)
     Fonts = {
         ["title"] = love.graphics.newFont("assets/fonts/Fredoka.ttf", 60 * FONT_SCALE),
-        ["large"] = love.graphics.newFont("assets/fonts/BubblegumSans.ttf",45 * FONT_SCALE),
         ["button"] = love.graphics.newFont("assets/fonts/Fredoka.ttf", 35 * FONT_SCALE),
+        ["large"] = love.graphics.newFont("assets/fonts/BubblegumSans.ttf", 45 * FONT_SCALE),
+        ["meduim"] = love.graphics.newFont("assets/fonts/Fredoka.ttf", 25 * FONT_SCALE),
         ["small"] = love.graphics.newFont("assets/fonts/Fredoka.ttf", 16 * FONT_SCALE),
     }
 end
@@ -49,6 +50,9 @@ function love.load()
         end,
         ["play"] = function()
             return PlayState()
+        end,
+        ["level-complete"] = function()
+            return LevelCompleteState()
         end,
         ["level-select"] = function()
             return LevelSelectState()

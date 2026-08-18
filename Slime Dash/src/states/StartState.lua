@@ -31,14 +31,13 @@ function StartState:init()
 end
 
 function StartState:update(dt)
-    if self.startButton:isClicked() or love.keyboard.wasPressed("space") then
+    if self.startButton:isClicked() then
         GameState:change("play", { level = self.level })
-    elseif self.levelsButton:isClicked() or love.keyboard.wasPressed("s") then
+    elseif self.levelsButton:isClicked() then
         GameState:change("level-select", { level = self.level })
     end
 
     if love.keyboard.wasPressed("escape") then
-        Save.write(Progress)
         love.event.quit()
     end
 

@@ -62,12 +62,6 @@ function PlayState:update(dt)
     elseif self.backButton:isClicked() or love.keyboard.wasPressed("escape") then
         GameState:change("start")
     end
-    -- for testing, to be removed
-    if love.keyboard.wasPressed("space") then
-        GameState:change("play", { level = self.level + 1 })
-    elseif love.keyboard.wasPressed("r") then
-        self:reset()
-    end
 end
 
 function PlayState:render()
