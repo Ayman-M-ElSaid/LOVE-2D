@@ -7,8 +7,14 @@ local function loadFonts(w, h)
     Fonts = {
         ["title"] = love.graphics.newFont("assets/fonts/Fredoka.ttf", 60 * FONT_SCALE),
         ["button"] = love.graphics.newFont("assets/fonts/Fredoka.ttf", 35 * FONT_SCALE),
-        ["large"] = love.graphics.newFont("assets/fonts/BubblegumSans.ttf", 45 * FONT_SCALE),
-        ["meduim"] = love.graphics.newFont("assets/fonts/Fredoka.ttf", 25 * FONT_SCALE),
+        ["large"] = love.graphics.newFont(
+            "assets/fonts/BubblegumSans.ttf",
+            45 * FONT_SCALE
+        ),
+        ["medium "] = love.graphics.newFont(
+            "assets/fonts/Fredoka.ttf",
+            25 * FONT_SCALE
+        ),
         ["small"] = love.graphics.newFont("assets/fonts/Fredoka.ttf", 16 * FONT_SCALE),
     }
 end
@@ -73,6 +79,10 @@ end
 function love.resize(w, h)
     Push.resize(w, h)
     loadFonts(w, h)
+end
+
+function love.quit()
+    Save.write(Progress)
 end
 
 function love.keypressed(key)

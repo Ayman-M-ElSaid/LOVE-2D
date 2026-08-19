@@ -26,7 +26,7 @@ function StartState:init()
 
     self.bubbles = {}
     for _ = 1, 20 do
-        table.insert(self.bubbles, Bubble(love.math.random(VIRTUAL_HEIGHT)))
+        table.insert(self.bubbles, Bubble())
     end
 end
 

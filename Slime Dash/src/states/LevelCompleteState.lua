@@ -109,7 +109,7 @@ function LevelCompleteState:init()
 
     self.bubbles = {}
     for _ = 1, 20 do
-        table.insert(self.bubbles, Bubble(love.math.random(VIRTUAL_HEIGHT)))
+        table.insert(self.bubbles, Bubble())
     end
 end
 
@@ -161,6 +161,7 @@ function LevelCompleteState:enter(params)
 end
 
 function LevelCompleteState:exit()
+    Timer.clear()
     love.graphics.setLineWidth(1)
 end
 
@@ -241,7 +242,7 @@ function LevelCompleteState:render()
         )
     end
     -- print UI messages
-    love.graphics.setFont(Fonts["meduim"])
+    love.graphics.setFont(Fonts["medium "])
     PrintfScaled(
         "Level " .. tostring(self.level),
         self.x,

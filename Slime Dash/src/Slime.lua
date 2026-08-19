@@ -31,9 +31,10 @@ function Slime:checkInput()
 
     for _, touch in ipairs(love.touch.released) do
         local start = self.activeTouch[touch.id]
-        if start then
-            local dx = touch.x - start.x
-            local dy = touch.y - start.y
+        local x, y = touch.x, touch.y
+        if start and x and y then
+            local dx = x - start.x
+            local dy = y - start.y
             local direction
             if math.abs(dx) > math.abs(dy) then
                 if dx >= SWIPE_THRESHOLD then

@@ -39,7 +39,12 @@ end
 function PlayState:reset()
     self.trialCounter = self.trialCounter + 1
     self.slime.x, self.slime.y = self.startPointx, self.startPointY
+    self.slime.dx, self.slime.dy = 0, 0
     self.slime.direction = 1
+    self.slime.isMoving = false
+    self.slime.moveCount = 0
+    self.slime.moveQueue = {}
+
     for _, row in ipairs(self.tiles) do
         for _, tile in ipairs(row) do
             if not tile.isSolid then

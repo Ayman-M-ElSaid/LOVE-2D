@@ -3,9 +3,9 @@ local Bubble = Class({})
 function Bubble:init()
     self.time = 0
     self.back = love.math.random() < 0.4
-    self.baseX = love.math.random(0, 360)
+    self.baseX = love.math.random(0, VIRTUAL_WIDTH)
     self.x = self.baseX
-    self.y = love.math.random(800)
+    self.y = love.math.random(VIRTUAL_HEIGHT)
     self.radius = self.back and love.math.random(3, 6) or love.math.random(6, 10)
     self.speed = self.back and (10 + love.math.random() * 8)
         or (20 + love.math.random() * 14)
